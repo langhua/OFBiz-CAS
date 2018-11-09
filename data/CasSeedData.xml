@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<entity-engine-xml>
+
+    <EnumerationType description="CAS enumeration of the logout type" enumTypeId="CAS_LOGOUT_TYPE" hasTable="N" parentTypeId=""/>
+    <Enumeration description="For no single logout" enumCode="CAS_LOGOUT_NONE" enumId="NONE" enumTypeId="CAS_LOGOUT_TYPE" sequenceId="10"/>
+    <Enumeration description="For back channel single logout" enumCode="CAS_BACK_CHANNEL" enumId="BACK_CHANNEL" enumTypeId="CAS_LOGOUT_TYPE" sequenceId="20"/>
+    <Enumeration description="For front channel single logout" enumCode="CAS_FRONT_CHANNEL" enumId="FRONT_CHANNEL" enumTypeId="CAS_LOGOUT_TYPE" sequenceId="30"/>
+
+</entity-engine-xml>

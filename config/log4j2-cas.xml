@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Specify the refresh internal in seconds. -->
+<Configuration monitorInterval="60">
+    <Appenders>
+        <RollingFile name="caslogfile" fileName="runtime/logs/cas/cas.log" append="true"
+                     filePattern="runtime/logs/cas/cas-%d{yyyy-MM-dd-HH}-%i.log">
+            <PatternLayout pattern="%d %p [%c] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="auditlogfile" fileName="runtime/logs/cas/cas_audit.log" append="true"
+                     filePattern="runtime/logs/cas/cas_audit-%d{yyyy-MM-dd-HH}-%i.log">
+            <PatternLayout pattern="%d %p [%c] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="perfFileAppender" fileName="runtime/logs/cas/perfStats.log" append="true"
+                     filePattern="runtime/logs/cas/perfStats-%d{yyyy-MM-dd-HH}-%i.log">
+            <PatternLayout pattern="%m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <AsyncLogger name="org.jasig" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="stdout"/>
+            <AppenderRef ref="caslogfile"/>
+        </AsyncLogger>
+        <AsyncLogger name="org.langhua.ofbiz.cas" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="stdout"/>
+            <AppenderRef ref="caslogfile"/>
+        </AsyncLogger>
+        <AsyncLogger name="org.springframework" level="warn" />
+        <AsyncLogger name="org.springframework.webflow" level="warn" />
+        <AsyncLogger name="org.springframework.web" level="warn" />
+        <AsyncLogger name="org.pac4j" level="warn" />
+        <!--
+        <AsyncLogger name="org.opensaml" level="debug" additivity="false">
+            <AppenderRef ref="stdout"/>
+            <AppenderRef ref="caslogfile"/>
+        </AsyncLogger>
+        <AsyncLogger name="org.ldaptive" level="debug" additivity="false">
+            <AppenderRef ref="stdout"/>
+            <AppenderRef ref="caslogfile"/>
+        </AsyncLogger>
+        <AsyncLogger name="com.hazelcast" level="debug" additivity="false">
+            <AppenderRef ref="stdout"/>
+            <AppenderRef ref="caslogfile"/>
+        </AsyncLogger>
+        -->
+        <AsyncLogger  name="org.apereo.cas.security" level="warn" additivity="false" includeLocation="true">
+            <AppenderRef ref="caslogfile"/>
+        </AsyncLogger>
+        
+        <AsyncLogger name="perfStatsLogger" level="info" additivity="false" includeLocation="true">
+            <AppenderRef ref="perfFileAppender"/>
+        </AsyncLogger>
+
+        <AsyncLogger name="org.jasig.cas.web.flow" level="info" additivity="true" includeLocation="true">
+            <AppenderRef ref="caslogfile"/>
+        </AsyncLogger>
+        <AsyncLogger name="org.jasig.inspektr.audit.support" level="info" includeLocation="true">
+            <AppenderRef ref="auditlogfile"/>
+            <AppenderRef ref="caslogfile"/>
+        </AsyncLogger>
+        <AsyncRoot level="error">
+            <AppenderRef ref="stdout"/>
+        </AsyncRoot>
+    </Loggers>
+</Configuration>
