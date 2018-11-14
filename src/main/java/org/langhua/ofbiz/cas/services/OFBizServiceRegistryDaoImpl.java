@@ -119,7 +119,7 @@ public class OFBizServiceRegistryDaoImpl implements ServiceRegistryDao {
     	}
 		registeredService.setId(Long.parseLong(registeredServiceValue.getString("id")));
 		registeredService.setServiceId(registeredServiceValue.getString("serviceId"));
-		registeredService.setName(registeredServiceValue.getString("name"));
+		registeredService.setName(registeredServiceValue.getString("serviceName"));
 		registeredService.setTheme(registeredServiceValue.getString("theme"));
 		registeredService.setDescription(registeredServiceValue.getString("description"));
 		registeredService.setProxyPolicy((RegisteredServiceProxyPolicy) registeredServiceValue.get("proxyPolicy"));
@@ -150,13 +150,14 @@ public class OFBizServiceRegistryDaoImpl implements ServiceRegistryDao {
 		try {
 			returnRegisteredService = (AbstractRegisteredService) registeredService.clone();
 	        long id = registeredService.getId();
-	        if (registeredService.getId() == RegisteredService.INITIAL_IDENTIFIER_VALUE) {
-	            id = delegator.getNextSeqIdLong(entityName);
+	        if (id == RegisteredService.INITIAL_IDENTIFIER_VALUE) {
+	        	// we ONLY accept configured services from json service registry
+	            return null;
 	        }
 	    	GenericValue registeredServiceValue = delegator.makeValue(entityName,
 	                                                                  "id", String.valueOf(id),
 	                                                                  "serviceId", registeredService.getServiceId(),
-	                                                                  "name", returnRegisteredService.getName(),
+	                                                                  "serviceName", returnRegisteredService.getName(),
 	                                                                  "theme", registeredService.getTheme(),
 	                                                                  "description", registeredService.getDescription(),
 	                                                                  "proxyPolicy", registeredService.getProxyPolicy(),

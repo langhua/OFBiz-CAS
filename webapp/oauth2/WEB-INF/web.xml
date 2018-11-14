@@ -114,7 +114,7 @@
         <url-pattern>/logout</url-pattern>
     </servlet-mapping>
 
-    <servlet-mapping>
+<!--     <servlet-mapping>
         <servlet-name>cas</servlet-name>
         <url-pattern>/validate</url-pattern>
     </servlet-mapping>
@@ -148,23 +148,23 @@
         <servlet-name>cas</servlet-name>
         <url-pattern>/CentralAuthenticationService</url-pattern>
     </servlet-mapping>
-
+ -->
     <servlet-mapping>
         <servlet-name>cas</servlet-name>
         <url-pattern>/status</url-pattern>
     </servlet-mapping>
 
-    <servlet-mapping>
+<!--     <servlet-mapping>
         <servlet-name>cas</servlet-name>
         <url-pattern>/statistics</url-pattern>
     </servlet-mapping>
-
+ -->
     <servlet-mapping>
         <servlet-name>cas</servlet-name>
         <url-pattern>/statistics/ping</url-pattern>
     </servlet-mapping>
 
-    <servlet-mapping>
+<!--     <servlet-mapping>
         <servlet-name>cas</servlet-name>
         <url-pattern>/statistics/metrics</url-pattern>
     </servlet-mapping>
@@ -198,13 +198,13 @@
         <servlet-name>cas</servlet-name>
         <url-pattern>/status/config</url-pattern>
     </servlet-mapping>
-    
+ -->    
     <servlet-mapping>
         <servlet-name>cas</servlet-name>
         <url-pattern>/authorizationFailure.html</url-pattern>
     </servlet-mapping>
     <!-- REST support if cas-server-support-rest is included -->
-    <servlet-mapping>
+<!--     <servlet-mapping>
         <servlet-name>cas</servlet-name>
         <url-pattern>/v1/tickets/*</url-pattern>
     </servlet-mapping>
@@ -212,7 +212,7 @@
         <servlet-name>cas</servlet-name>
         <url-pattern>/v1/services/*</url-pattern>
     </servlet-mapping>
-    
+ -->    
     <servlet-mapping>
         <servlet-name>cas</servlet-name>
         <url-pattern>/v2/*</url-pattern>
@@ -221,10 +221,10 @@
     <session-config>
         <!-- Default to 5 minute session timeouts -->
         <session-timeout>5</session-timeout>
-        <tracking-mode>COOKIE</tracking-mode>
         <cookie-config>
             <http-only>true</http-only>
         </cookie-config>
+        <tracking-mode>COOKIE</tracking-mode>
     </session-config>
 
     <error-page>

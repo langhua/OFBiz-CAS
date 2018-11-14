@@ -9,7 +9,7 @@
 	<entity entity-name="CasTicketGrantingTicket"
 			package-name="org.langhua.ofbiz.cas"
         	title="CAS ticket granting ticket entity">
-        <field name="type" type="short-varchar"/>
+        <field name="ticketType" type="short-varchar"/>
         <field name="tgtId" type="id-vlong"><description>Ticket granting ticket id</description></field>
         <field name="numberOfTimesUsed" type="numeric"><description>Number of times used</description></field>
         <field name="creationTime" type="numeric"><description>Creation time</description></field>
@@ -62,7 +62,7 @@
         	title="CAS registered service entity">
         <field name="id" type="id-long"><description>Id</description></field>
         <field name="serviceId" type="value"><description>Registered service id</description></field>
-        <field name="name" type="long-varchar"><description>Registered service name</description></field>
+        <field name="serviceName" type="long-varchar"><description>Registered service name</description></field>
         <field name="theme" type="long-varchar"><description>Registered service theme</description></field>
         <field name="description" type="long-varchar"><description>Registered service description</description></field>
         <field name="proxyPolicy" type="object"><description>Registered service proxy policy</description></field>
