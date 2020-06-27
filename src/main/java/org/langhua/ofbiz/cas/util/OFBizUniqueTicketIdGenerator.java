@@ -53,20 +53,20 @@ public final class OFBizUniqueTicketIdGenerator implements UniqueTicketIdGenerat
      */
     @Override
     public String getNewTicketId(final String prefix) {
-    	String entityName = getEntityName(prefix);
+        String entityName = getEntityName(prefix);
         String ticketId = prefix + "-" + delegator.getNextSeqId(entityName);
         LOGGER.info("New ticket id[{}] generated.", ticketId);
         return ticketId;
     }
 
     private static String getEntityName(String prefix) {
-    	String entityName = null;
-    	if (prefix.equals(TicketGrantingTicket.PREFIX)
+        String entityName = null;
+        if (prefix.equals(TicketGrantingTicket.PREFIX)
                 || prefix.equals(ProxyGrantingTicket.PROXY_GRANTING_TICKET_PREFIX)) {
-    		entityName = "CasTicketGrantingTicket";
-    	} else {
-    		entityName = "CasServiceTicket";
-    	}
-		return entityName;
-	}
+            entityName = "CasTicketGrantingTicket";
+        } else {
+            entityName = "CasServiceTicket";
+        }
+        return entityName;
+    }
 }

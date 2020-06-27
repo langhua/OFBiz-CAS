@@ -27,7 +27,7 @@
       create proxies around any beans defined in this file that match the pointcuts
       of any aspects defined in this file.
     -->
-    <aop:aspectj-autoproxy/>
+    <!-- <aop:aspectj-autoproxy/> -->
 
     <!-- ADVISORS -->
     <bean id="advisorAutoProxyCreator"
@@ -112,6 +112,7 @@
                 <prop key="org.quartz.scheduler.interruptJobsOnShutdownWithWait">
                     ${scheduler.shutdown.interruptJobs:true}
                 </prop>
+                <prop key="org.quartz.scheduler.skipUpdateCheck">true</prop>
             </props>
         </property>
     </bean>

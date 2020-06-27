@@ -43,9 +43,9 @@ import java.util.Collection;
 @Transactional(transactionManager = "ticketTransactionManager", readOnly = true)
 public class OFBizTicketRegistryCleaner extends TransactionTemplate implements Job {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
+    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     @Qualifier("logoutManager")

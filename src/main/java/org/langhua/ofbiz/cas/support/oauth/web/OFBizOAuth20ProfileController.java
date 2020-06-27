@@ -131,33 +131,33 @@ public final class OFBizOAuth20ProfileController extends BaseOAuthWrapperControl
 
                 Principal principal = ticketGrantingTicket.getAuthentication().getPrincipal();
                 if (principal != null && UtilValidate.isNotEmpty(principal.getId()) && UtilValidate.isEmpty(principal.getAttributes())) {
-                	// fetch the user's data
-                	String userId = principal.getId();
+                    // fetch the user's data
+                    String userId = principal.getId();
                     Map<String, Object> attributes = new HashMap<String, Object>();
                     try {
-            			GenericValue person = EntityQuery.use(this.delegator)
-            					                         .from("UserLoginAndPartyDetails")
-            					                         .where("userLoginId", userId)
-            					                         .queryOne();
-            			if (UtilValidate.isNotEmpty(person)) {
-            				String firstName = UtilValidate.isEmpty(person.getString("firstName")) ? "" : person.getString("firstName");
-            				if (UtilValidate.isNotEmpty(firstName)) {
-            					attributes.put("firstName", firstName);
-            				}
-            				String lastName = UtilValidate.isEmpty(person.getString("lastName")) ? "" : person.getString("lastName");
-            				if (UtilValidate.isNotEmpty(lastName)) {
-            					attributes.put("lastName", lastName);
-            				}
-            				if (UtilValidate.isNotEmpty(person.getString("partyId"))) {
-            					attributes.put("partyId", person.getString("partyId"));
-            				}
-            				if (UtilValidate.isNotEmpty(person.getString("groupName"))) {
-            					attributes.put("groupMembership", person.getString("groupName"));
-            				}
-            			}
-            		} catch (GenericEntityException e) {
-            			// do nothing
-            		}
+                        GenericValue person = EntityQuery.use(this.delegator)
+                                                         .from("UserLoginAndPartyDetails")
+                                                         .where("userLoginId", userId)
+                                                         .queryOne();
+                        if (UtilValidate.isNotEmpty(person)) {
+                            String firstName = UtilValidate.isEmpty(person.getString("firstName")) ? "" : person.getString("firstName");
+                            if (UtilValidate.isNotEmpty(firstName)) {
+                                attributes.put("firstName", firstName);
+                            }
+                            String lastName = UtilValidate.isEmpty(person.getString("lastName")) ? "" : person.getString("lastName");
+                            if (UtilValidate.isNotEmpty(lastName)) {
+                                attributes.put("lastName", lastName);
+                            }
+                            if (UtilValidate.isNotEmpty(person.getString("partyId"))) {
+                                attributes.put("partyId", person.getString("partyId"));
+                            }
+                            if (UtilValidate.isNotEmpty(person.getString("groupName"))) {
+                                attributes.put("groupMembership", person.getString("groupName"));
+                            }
+                        }
+                    } catch (GenericEntityException e) {
+                        // do nothing
+                    }
                     if (UtilValidate.isNotEmpty(attributes)) {
                         principal = this.principalFactory.createPrincipal(userId, attributes);
                     }

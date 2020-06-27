@@ -50,7 +50,7 @@
     <alias name="serviceThemeResolver" alias="themeResolver" />
 
     <alias name="ofbizServiceRegistryDao" alias="serviceRegistryDao" />
-	
+    
     <alias name="ofbizTicketRegistry" alias="ticketRegistry" />
     
     <alias name="ofbizTicketGrantingTicketUniqueIdGenerator" alias="ticketGrantingTicketUniqueIdGenerator"/>

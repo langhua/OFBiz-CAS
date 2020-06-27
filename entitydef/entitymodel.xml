@@ -6,9 +6,9 @@
     <!-- ========================================================= -->
     <title>Entity of CAS/OAuth2 Component</title>
     
-	<entity entity-name="CasTicketGrantingTicket"
-			package-name="org.langhua.ofbiz.cas"
-        	title="CAS ticket granting ticket entity">
+    <entity entity-name="CasTicketGrantingTicket"
+            package-name="org.langhua.ofbiz.cas"
+            title="CAS ticket granting ticket entity">
         <field name="ticketType" type="short-varchar"/>
         <field name="tgtId" type="id-vlong"><description>Ticket granting ticket id</description></field>
         <field name="numberOfTimesUsed" type="numeric"><description>Number of times used</description></field>
@@ -25,13 +25,13 @@
         <field name="ticketGrantingTicketId" type="id-vlong"><description>Ticket granting ticket id</description></field>
         <prim-key field="tgtId"/>
         <relation type="one-nofk" fk-name="CAS_TGT_TGT_ID_REL" rel-entity-name="CasTicketGrantingTicket">
-        	<key-map field-name="tgtId" rel-field-name="ticketGrantingTicketId"/>
+            <key-map field-name="tgtId" rel-field-name="ticketGrantingTicketId"/>
         </relation>
     </entity>
 
-	<entity entity-name="CasServiceTicket"
-			package-name="org.langhua.ofbiz.cas"
-        	title="CAS service ticket entity">
+    <entity entity-name="CasServiceTicket"
+            package-name="org.langhua.ofbiz.cas"
+            title="CAS service ticket entity">
         <field name="ticketId" type="id-vlong"><description>Service ticket id</description></field>
         <field name="numberOfTimesUsed" type="numeric"><description>Number of times used</description></field>
         <field name="creationTime" type="numeric"><description>Creation time of the service ticket</description></field>
@@ -44,22 +44,22 @@
         <field name="tgtId" type="id-vlong"><description>Ticket grant ticket id</description></field>
         <prim-key field="ticketId"/>
         <relation type="one-nofk" fk-name="CAS_ST_TGT_ID_REL" rel-entity-name="CasTicketGrantingTicket">
-        	<key-map field-name="tgtId"/>
+            <key-map field-name="tgtId"/>
         </relation>
     </entity>
     
-	<entity entity-name="CasLocks"
-			package-name="org.langhua.ofbiz.cas"
-        	title="CAS locks entity">
+    <entity entity-name="CasLocks"
+            package-name="org.langhua.ofbiz.cas"
+            title="CAS locks entity">
         <field name="applicationId" type="id-vlong"><description>Application id</description></field>
         <field name="expirationDate" type="date-time"><description>Expiration date</description></field>
         <field name="uniqueId" type="id-vlong"><description>Unique id</description></field>
         <prim-key field="applicationId"/>
     </entity>
 
-	<entity entity-name="CasRegistedService"
-			package-name="org.langhua.ofbiz.cas"
-        	title="CAS registered service entity">
+    <entity entity-name="CasRegistedService"
+            package-name="org.langhua.ofbiz.cas"
+            title="CAS registered service entity">
         <field name="id" type="id-long"><description>Id</description></field>
         <field name="serviceId" type="value"><description>Registered service id</description></field>
         <field name="serviceName" type="long-varchar"><description>Registered service name</description></field>

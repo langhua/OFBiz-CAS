@@ -76,13 +76,13 @@ public class OFBizLockingStrategy implements LockingStrategy {
      */
     @Autowired
     public OFBizLockingStrategy(@Value("${database.cleaner.appid:cas-ticket-registry-cleaner}")
-    		                    final String applicationId,
-    		                    @Value("${host.name:cas01.example.org}")
-    		                    final String uniqueId,
-    		                    @Value("${default.ofbiz.lock.timeout:3600}") /** 1 hour */
-    		                    final long lockTimeout,
-    		                    @Value("${default.ofbiz.delegator.name:default}")
-    		                    final String delegatorName) {
+                                final String applicationId,
+                                @Value("${host.name:cas01.example.org}")
+                                final String uniqueId,
+                                @Value("${default.ofbiz.lock.timeout:3600}") /** 1 hour */
+                                final long lockTimeout,
+                                @Value("${default.ofbiz.delegator.name:default}")
+                                final String delegatorName) {
         this.applicationId = applicationId;
         this.uniqueId = uniqueId;
         if (lockTimeout < 0) {
@@ -94,26 +94,26 @@ public class OFBizLockingStrategy implements LockingStrategy {
     
     @Override
     public void release() {
-		try {
-			GenericValue lockValue = EntityQuery.use(delegator)
-					                            .from(LocksEntityName)
-					                            .where("applicationId", applicationId)
-					                            .cache(false)
-					                            .queryOne();
-	        if (lockValue == null) {
-	        	return;
-	        }
-	        final String owner = lockValue.getString("uniqueId");
-	        if (!this.uniqueId.equals(owner)) {
-	            throw new IllegalStateException("Cannot release lock owned by " + owner);
-	        }
-	        lockValue.set("uniqueId", null);
-	        lockValue.set("expirationDate", null);
-	        LOGGER.debug("Releasing [{}] lock held by [{}].", this.applicationId, this.uniqueId);
-	        lockValue.store();
-		} catch (GenericEntityException e) {
-			// do nothing
-		}
+        try {
+            GenericValue lockValue = EntityQuery.use(delegator)
+                                                .from(LocksEntityName)
+                                                .where("applicationId", applicationId)
+                                                .cache(false)
+                                                .queryOne();
+            if (lockValue == null) {
+                return;
+            }
+            final String owner = lockValue.getString("uniqueId");
+            if (!this.uniqueId.equals(owner)) {
+                throw new IllegalStateException("Cannot release lock owned by " + owner);
+            }
+            lockValue.set("uniqueId", null);
+            lockValue.set("expirationDate", null);
+            LOGGER.debug("Releasing [{}] lock held by [{}].", this.applicationId, this.uniqueId);
+            lockValue.store();
+        } catch (GenericEntityException e) {
+            // do nothing
+        }
     }
     
     @Override
@@ -128,7 +128,7 @@ public class OFBizLockingStrategy implements LockingStrategy {
      * @return true, if successful
      */
     public boolean acquire(GenericValue lockValue) {
-    	boolean success = true;
+        boolean success = true;
         try {
             if (lockValue == null) {
                 lockValue = delegator.makeValue(LocksEntityName,
@@ -155,15 +155,15 @@ public class OFBizLockingStrategy implements LockingStrategy {
     @Override
     public boolean acquire() {
         GenericValue lockValue = null;
-		try {
-			lockValue = EntityQuery.use(delegator)
-			                       .from(LocksEntityName)
-			                       .where("applicationId", this.applicationId)
-			                       .cache(false)
-			                       .queryOne();
-		} catch (GenericEntityException e) {
-			// do nothing
-		}
+        try {
+            lockValue = EntityQuery.use(delegator)
+                                   .from(LocksEntityName)
+                                   .where("applicationId", this.applicationId)
+                                   .cache(false)
+                                   .queryOne();
+        } catch (GenericEntityException e) {
+            // do nothing
+        }
 
         boolean result = false;
         if (lockValue != null) {

@@ -49,7 +49,7 @@ public class OFBizAuthenticationHandler extends AbstractUsernamePasswordAuthenti
     private LocalDispatcher dispatcher;
     
     @Autowired
-    public OFBizAuthenticationHandler(@Value("${default.ofbiz.dispatcher.name:main}")
+    public OFBizAuthenticationHandler(@Value("${default.ofbiz.dispatcher.name:webtools}")
                                       final String localDispatcherName,
                                       @Value("${default.ofbiz.delegator.name:default}")
                                       final String delegatorName) {
@@ -64,14 +64,14 @@ public class OFBizAuthenticationHandler extends AbstractUsernamePasswordAuthenti
         final String username = credential.getUsername();
         final String rawPassword = credential.getPassword();
         try {
-			Map<String, Object> results = this.dispatcher.runSync("userLogin", UtilMisc.toMap("login.username", username, "login.password", rawPassword));
-			if (!ServiceUtil.isSuccess(results)) {
-				LOGGER.debug("{} failed to login OFBiz.", username);
-				throw new GeneralSecurityException(ServiceUtil.getErrorMessage(results), new FailedLoginException());
-			}
-		} catch (GenericServiceException e) {
-			throw new PreventedException(e);
-		}
+            Map<String, Object> results = this.dispatcher.runSync("userLogin", UtilMisc.toMap("login.username", username, "login.password", rawPassword));
+            if (!ServiceUtil.isSuccess(results)) {
+                LOGGER.debug("{} failed to login OFBiz.", username);
+                throw new GeneralSecurityException(ServiceUtil.getErrorMessage(results), new FailedLoginException());
+            }
+        } catch (GenericServiceException e) {
+            throw new PreventedException(e);
+        }
         return createHandlerResult(credential, this.principalFactory.createPrincipal(username), null);
     }
 }

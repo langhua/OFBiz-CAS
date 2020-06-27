@@ -29,31 +29,28 @@
     </Appenders>
     <Loggers>
         <AsyncLogger name="org.jasig" level="info" additivity="false" includeLocation="true">
-            <AppenderRef ref="stdout"/>
             <AppenderRef ref="caslogfile"/>
         </AsyncLogger>
         <AsyncLogger name="org.langhua.ofbiz.cas" level="info" additivity="false" includeLocation="true">
-            <AppenderRef ref="stdout"/>
             <AppenderRef ref="caslogfile"/>
         </AsyncLogger>
-        <AsyncLogger name="org.springframework" level="warn" />
-        <AsyncLogger name="org.springframework.webflow" level="warn" />
-        <AsyncLogger name="org.springframework.web" level="warn" />
-        <AsyncLogger name="org.pac4j" level="warn" />
-        <!--
-        <AsyncLogger name="org.opensaml" level="debug" additivity="false">
-            <AppenderRef ref="stdout"/>
-            <AppenderRef ref="caslogfile"/>
-        </AsyncLogger>
-        <AsyncLogger name="org.ldaptive" level="debug" additivity="false">
-            <AppenderRef ref="stdout"/>
-            <AppenderRef ref="caslogfile"/>
-        </AsyncLogger>
-        <AsyncLogger name="com.hazelcast" level="debug" additivity="false">
-            <AppenderRef ref="stdout"/>
-            <AppenderRef ref="caslogfile"/>
-        </AsyncLogger>
-        -->
+
+        <AsyncLogger name="org.springframework.aop" level="info" />
+        <AsyncLogger name="org.springframework.beans" level="info" />
+        <AsyncLogger name="org.springframework.context" level="info" />
+        <AsyncLogger name="org.springframework.core" level="info" />
+        <AsyncLogger name="org.springframework.jndi" level="info" />
+        <AsyncLogger name="org.springframework.transaction" level="info" />
+        <AsyncLogger name="org.springframework.ui" level="info" />
+        <AsyncLogger name="org.springframework.util" level="info" />
+        <AsyncLogger name="org.springframework.webflow" level="info" />
+        <AsyncLogger name="org.springframework.web" level="info" />
+        <AsyncLogger name="org.pac4j" level="info" />
+        <AsyncLogger name="com.ryantenney.metrics" level="info" />
+        <AsyncLogger name="org.hibernate.validator" level="info" />
+        <AsyncLogger name="org.jose4j" level="info" />
+        <AsyncLogger name="org.quartz" level="info" />
+
         <AsyncLogger  name="org.apereo.cas.security" level="warn" additivity="false" includeLocation="true">
             <AppenderRef ref="caslogfile"/>
         </AsyncLogger>
@@ -66,11 +63,7 @@
             <AppenderRef ref="caslogfile"/>
         </AsyncLogger>
         <AsyncLogger name="org.jasig.inspektr.audit.support" level="info" includeLocation="true">
-            <AppenderRef ref="auditlogfile"/>
             <AppenderRef ref="caslogfile"/>
         </AsyncLogger>
-        <AsyncRoot level="error">
-            <AppenderRef ref="stdout"/>
-        </AsyncRoot>
     </Loggers>
 </Configuration>

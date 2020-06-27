@@ -1,6 +1,8 @@
+[English](README.md) | [中文](README_zh.md)
+
+
 OFBiz-CAS Plugin
 ====
-[中文](README_zh.md)
 
 
 ### License

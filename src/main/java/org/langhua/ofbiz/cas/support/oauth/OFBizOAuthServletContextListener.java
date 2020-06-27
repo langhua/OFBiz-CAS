@@ -38,13 +38,13 @@ import javax.servlet.annotation.WebListener;
 @WebListener
 @Component
 public class OFBizOAuthServletContextListener extends AbstractServletContextInitializer {
-	
-	private static final String ENDPOINT_OAUTH2 = "/v2/*";
+    
+    private static final String ENDPOINT_OAUTH2 = "/v2/*";
 
-	private static final String ENDPOINT_OAUTH2_CALLBACK_AUTHORIZE = "/v2/callbackAuthorize";
-	
-	private static final String OFBIZ_OAUTH2_CONTROLLER_NAME = "ofbizOAuth20WrapperController";
-	
+    private static final String ENDPOINT_OAUTH2_CALLBACK_AUTHORIZE = "/v2/callbackAuthorize";
+    
+    private static final String OFBIZ_OAUTH2_CONTROLLER_NAME = "ofbizOAuth20WrapperController";
+    
     @Value("${server.prefix:https://localhost:8443/oauth}" + ENDPOINT_OAUTH2_CALLBACK_AUTHORIZE)
     private String callbackAuthorizeUrl;
 

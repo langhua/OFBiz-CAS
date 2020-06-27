@@ -1,30 +1,73 @@
+// set log4j runtime configuration files
+def findLogArg = false
+def originalLog4jConfig = ""
+def log4jConfig = ""
+rootProject.jvmArguments.each { jvmArg ->
+	if (jvmArg && jvmArg.startsWith("-Dlog4j.configurationFile=")) {
+		originalLog4jConfig = jvmArg
+		if (!jvmArg.endsWith("=")) {
+			jvmArg += ","
+		}
+		log4jConfig = jvmArg + "hot-deploy/cas/config/log4j2-cas.xml"
+		findLogArg = true
+		return true
+	}
+}
+if (!findLogArg) {
+	rootProject.jvmArguments.add('-Dlog4j.configurationFile=log4j2.xml,hot-deploy/cas/config/log4j2-cas.xml')
+} else {
+	rootProject.jvmArguments.remove(originalLog4jConfig)
+	rootProject.jvmArguments.add(log4jConfig)
+}
+
+rootProject.configurations.compile {
+	exclude module: 'log4j-slf4j-impl'
+	exclude module: 'log4j-jcl'
+}
+	
+rootProject.configurations.runtime {
+	exclude module: 'log4j-slf4j-impl'
+	exclude module: 'log4j-jcl'
+	exclude group: 'org.hibernate.javax.persistence', module: 'hibernate-jpa-2.1-api'
+}
+
+def casVersion = '4.2.7'
+def springVersion = '4.2.9.RELEASE'
+
 dependencies {
-    pluginLibsCompile 'org.jasig.cas:cas-server-core:4.2.7'
-    pluginLibsCompile 'org.jasig.cas:cas-server-core-services:4.2.7'
-    pluginLibsCompile 'org.jasig.cas:cas-server-core-authentication:4.2.7'
-    pluginLibsCompile 'org.jasig.cas:cas-server-core-logout:4.2.7'
-    pluginLibsCompile 'org.jasig.cas:cas-server-core-webflow:4.2.7'
-    pluginLibsCompile 'org.jasig.cas:cas-server-support-oauth:4.2.7'
-    pluginLibsCompile 'org.jasig.cas:cas-server-support-oauth-core:4.2.7'
-    pluginLibsCompile 'org.springframework.security:spring-security-crypto:4.2.8.RELEASE'
+    pluginLibsCompile 'org.jasig.cas:cas-server-core:' + casVersion
+    pluginLibsCompile 'org.jasig.cas:cas-server-core-services:' + casVersion
+    pluginLibsCompile 'org.jasig.cas:cas-server-core-authentication:' + casVersion
+    pluginLibsCompile 'org.jasig.cas:cas-server-core-logout:' + casVersion
+    pluginLibsCompile 'org.jasig.cas:cas-server-core-webflow:' + casVersion
+    pluginLibsCompile 'org.jasig.cas:cas-server-support-oauth:' + casVersion
+    pluginLibsCompile 'org.jasig.cas:cas-server-support-oauth-core:' + casVersion
     
-    pluginLibsRuntime 'org.jasig.cas:cas-server-core-audit:4.2.7'
-    pluginLibsRuntime 'org.jasig.cas:cas-server-core-monitor:4.2.7'
-    pluginLibsRuntime 'org.jasig.cas:cas-server-webapp-actions:4.2.7'
-    pluginLibsRuntime 'org.jasig.cas:cas-server-webapp-support:4.2.7'
-    pluginLibsRuntime 'org.jasig.cas:cas-server-webapp-themes:4.2.7'
-    pluginLibsRuntime 'org.jasig.cas:cas-server-webapp-throttle:4.2.7'
+    pluginLibsRuntime 'org.jasig.cas:cas-server-core-audit:' + casVersion
+    pluginLibsRuntime 'org.jasig.cas:cas-server-core-monitor:' + casVersion
+    pluginLibsRuntime 'org.jasig.cas:cas-server-webapp-actions:' + casVersion
+    pluginLibsRuntime 'org.jasig.cas:cas-server-webapp-support:' + casVersion
+    pluginLibsRuntime 'org.jasig.cas:cas-server-webapp-themes:' + casVersion
+    pluginLibsRuntime 'org.jasig.cas:cas-server-webapp-throttle:' + casVersion
+
     pluginLibsRuntime 'org.apereo.cas:cas-server-security-filter:2.0.6'
-    pluginLibsRuntime 'org.springframework:spring-core:4.2.8.RELEASE'
-    pluginLibsRuntime 'org.springframework:spring-context:4.2.8.RELEASE'
+
+    pluginLibsRuntime 'org.springframework:spring-core:' + springVersion
+    pluginLibsRuntime 'org.springframework:spring-context:' + springVersion
+
     pluginLibsRuntime 'org.jasig:spring-webflow-client-repo:1.0.0'
     pluginLibsRuntime 'org.pac4j:spring-webmvc-pac4j:1.0.1'
+
     pluginLibsRuntime 'org.apache.logging.log4j:log4j-web:2.10.0'
+
     pluginLibsRuntime 'io.dropwizard.metrics:metrics-healthchecks:3.1.2'
     pluginLibsRuntime 'io.dropwizard.metrics:metrics-json:3.1.2'
     pluginLibsRuntime 'io.dropwizard.metrics:metrics-servlets:3.1.2'
     pluginLibsRuntime 'com.ryantenney.metrics:metrics-spring:3.1.2'
+
     pluginLibsRuntime 'org.pac4j:pac4j-core:1.8.9'
     pluginLibsRuntime 'org.pac4j:pac4j-http:1.8.9'
+
     pluginLibsRuntime 'jstl:jstl:1.2'
+	pluginLibsRuntime 'com.lmax:disruptor:3.3.4'
 }
