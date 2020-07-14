@@ -1,16 +1,25 @@
-Index: framework/catalina/src/main/java/org/apache/ofbiz/catalina/container/CatalinaContainer.java
-===================================================================
---- framework/catalina/src/main/java/org/apache/ofbiz/catalina/container/CatalinaContainer.java	(revision 1848624)
-+++ framework/catalina/src/main/java/org/apache/ofbiz/catalina/container/CatalinaContainer.java	(working copy)
-@@ -20,6 +20,7 @@
+diff --git a/framework/catalina/src/main/java/org/apache/ofbiz/catalina/container/CatalinaContainer.java b/framework/catalina/src/main/java/org/apache/ofbiz/catalina/container/CatalinaContainer.java
+index d300b70..8b64183 100644
+--- a/framework/catalina/src/main/java/org/apache/ofbiz/catalina/container/CatalinaContainer.java
++++ b/framework/catalina/src/main/java/org/apache/ofbiz/catalina/container/CatalinaContainer.java
+@@ -20,6 +20,8 @@
  
  import java.io.File;
  import java.io.IOException;
 +import java.net.MalformedURLException;
- import java.net.URL;
++import java.net.URL;
  import java.util.ArrayList;
  import java.util.Collections;
-@@ -53,6 +54,7 @@
+ import java.util.HashSet;
+@@ -33,7 +35,6 @@
+ 
+ import javax.naming.InitialContext;
+ import javax.naming.NamingException;
+-
+ import org.apache.catalina.Context;
+ import org.apache.catalina.Engine;
+ import org.apache.catalina.Globals;
+@@ -51,6 +52,7 @@
  import org.apache.catalina.ha.tcp.ReplicationValve;
  import org.apache.catalina.ha.tcp.SimpleTcpCluster;
  import org.apache.catalina.loader.WebappLoader;
@@ -18,15 +27,19 @@ Index: framework/catalina/src/main/java/org/apache/ofbiz/catalina/container/Cata
  import org.apache.catalina.startup.ContextConfig;
  import org.apache.catalina.startup.Tomcat;
  import org.apache.catalina.tribes.group.GroupChannel;
-@@ -74,6 +76,7 @@
+@@ -68,9 +70,11 @@
+ import org.apache.ofbiz.base.container.ContainerConfig.Configuration;
+ import org.apache.ofbiz.base.container.ContainerConfig.Configuration.Property;
+ import org.apache.ofbiz.base.container.ContainerException;
++import org.apache.ofbiz.base.location.FlexibleLocation;
  import org.apache.ofbiz.base.start.Start;
  import org.apache.ofbiz.base.start.StartupCommand;
  import org.apache.ofbiz.base.util.Debug;
 +import org.apache.ofbiz.base.util.FileUtil;
  import org.apache.ofbiz.base.util.UtilValidate;
- import org.apache.ofbiz.base.util.UtilXml;
  import org.apache.ofbiz.entity.util.EntityUtilProperties;
-@@ -493,9 +496,25 @@
+ import org.apache.ofbiz.webapp.WebAppUtil;
+@@ -495,9 +499,26 @@
              ComponentConfig.WebappInfo appInfo, Property clusterProp) throws ContainerException {
  
          StandardContext context = new StandardContext();
@@ -49,32 +62,8 @@ Index: framework/catalina/src/main/java/org/apache/ofbiz/catalina/container/Cata
 +        }
 +
          Tomcat.initWebappDefaults(context);
--
+ 
 -        String location = getWebappRootLocation(appInfo);
-         boolean contextIsDistributable = isContextDistributable(configuration, location);
+         boolean contextIsDistributable = isContextDistributable(configuration, appInfo);
  
          context.setParent(host);
-@@ -513,7 +532,7 @@
-         context.setPrivileged(appInfo.privileged);
-         context.getServletContext().setAttribute("_serverId", appInfo.server);
-         context.getServletContext().setAttribute("componentName", appInfo.componentConfig.getComponentName());
--
-+        
-         if (clusterProp != null && contextIsDistributable) {
-             context.setManager(prepareClusterManager(clusterProp));
-         }
-@@ -525,8 +544,12 @@
-         JarScanner jarScanner = context.getJarScanner();
-         if (jarScanner instanceof StandardJarScanner) {
-             StandardJarScanner standardJarScanner = (StandardJarScanner) jarScanner;
--            standardJarScanner.setJarScanFilter(new FilterJars());
--            standardJarScanner.setScanClassPath(true);
-+            String webXmlFilePath = new StringBuilder().append("file:///").append(location).append("/WEB-INF/web.xml").toString();
-+            if (FileUtil.isFile(webXmlFilePath)) {
-+                standardJarScanner.setJarScanFilter(new FilterJars());
-+            } else {
-+                Debug.logInfo("No web.xml found, try to scan jars to start the context of " + location, module);
-+            }
-         }
- 
-         Map<String, String> initParameters = appInfo.getInitParameters();
