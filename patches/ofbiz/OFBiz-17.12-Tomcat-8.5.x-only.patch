@@ -1,0 +1,80 @@
+Index: framework/catalina/src/main/java/org/apache/ofbiz/catalina/container/CatalinaContainer.java
+===================================================================
+--- framework/catalina/src/main/java/org/apache/ofbiz/catalina/container/CatalinaContainer.java	(revision 1848624)
++++ framework/catalina/src/main/java/org/apache/ofbiz/catalina/container/CatalinaContainer.java	(working copy)
+@@ -20,6 +20,7 @@
+ 
+ import java.io.File;
+ import java.io.IOException;
++import java.net.MalformedURLException;
+ import java.net.URL;
+ import java.util.ArrayList;
+ import java.util.Collections;
+@@ -53,6 +54,7 @@
+ import org.apache.catalina.ha.tcp.ReplicationValve;
+ import org.apache.catalina.ha.tcp.SimpleTcpCluster;
+ import org.apache.catalina.loader.WebappLoader;
++import org.apache.catalina.startup.Constants;
+ import org.apache.catalina.startup.ContextConfig;
+ import org.apache.catalina.startup.Tomcat;
+ import org.apache.catalina.tribes.group.GroupChannel;
+@@ -74,6 +76,7 @@
+ import org.apache.ofbiz.base.start.Start;
+ import org.apache.ofbiz.base.start.StartupCommand;
+ import org.apache.ofbiz.base.util.Debug;
++import org.apache.ofbiz.base.util.FileUtil;
+ import org.apache.ofbiz.base.util.UtilValidate;
+ import org.apache.ofbiz.base.util.UtilXml;
+ import org.apache.ofbiz.entity.util.EntityUtilProperties;
+@@ -493,9 +496,25 @@
+             ComponentConfig.WebappInfo appInfo, Property clusterProp) throws ContainerException {
+ 
+         StandardContext context = new StandardContext();
++        String location = getWebappRootLocation(appInfo);
++
++        String contextXmlFilePath = new StringBuilder().append("file:///").append(location).append("/").append(Constants.ApplicationContextXml).toString();
++        URL contextXmlUrl = null;
++        try {
++            contextXmlUrl = FlexibleLocation.resolveLocation(contextXmlFilePath);
++            contextXmlFilePath = new StringBuilder().append(location).append("/").append(Constants.ApplicationContextXml).toString();
++            File contextXmlFile = FileUtil.getFile(contextXmlFilePath);
++            if(contextXmlFile.exists() && contextXmlFile.isFile()) { 
++                Debug.logInfo(contextXmlFilePath + " found and will be loaded.", module);
++                context.setConfigFile(contextXmlUrl);
++            } else {
++                // Debug.logInfo(contextXmlFilePath + " not found or not a file.", module);
++            }
++        } catch (MalformedURLException e) {
++            Debug.logInfo(contextXmlFilePath+ " not found.", module);
++        }
++
+         Tomcat.initWebappDefaults(context);
+-
+-        String location = getWebappRootLocation(appInfo);
+         boolean contextIsDistributable = isContextDistributable(configuration, location);
+ 
+         context.setParent(host);
+@@ -513,7 +532,7 @@
+         context.setPrivileged(appInfo.privileged);
+         context.getServletContext().setAttribute("_serverId", appInfo.server);
+         context.getServletContext().setAttribute("componentName", appInfo.componentConfig.getComponentName());
+-
++        
+         if (clusterProp != null && contextIsDistributable) {
+             context.setManager(prepareClusterManager(clusterProp));
+         }
+@@ -525,8 +544,12 @@
+         JarScanner jarScanner = context.getJarScanner();
+         if (jarScanner instanceof StandardJarScanner) {
+             StandardJarScanner standardJarScanner = (StandardJarScanner) jarScanner;
+-            standardJarScanner.setJarScanFilter(new FilterJars());
+-            standardJarScanner.setScanClassPath(true);
++            String webXmlFilePath = new StringBuilder().append("file:///").append(location).append("/WEB-INF/web.xml").toString();
++            if (FileUtil.isFile(webXmlFilePath)) {
++                standardJarScanner.setJarScanFilter(new FilterJars());
++            } else {
++                Debug.logInfo("No web.xml found, try to scan jars to start the context of " + location, module);
++            }
+         }
+ 
+         Map<String, String> initParameters = appInfo.getInitParameters();

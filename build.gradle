@@ -1,0 +1,379 @@
+def ofbizVersion = '17.12.03',
+    casVersion = '5.3.15.1',
+    pac4jVersion = '3.6.1',
+    jacksonVersion = '2.9.9',
+    tomcatVersion = '9.0.31',
+    guavaVersion = '25.0-jre',
+    javassistVersion = '3.22.0-GA',
+    springVersion = '4.3.25.RELEASE',
+    springbootVersion = '1.5.18.RELEASE'
+
+def findLogArg = false
+def originalLog4jConfig = ""
+def log4jConfig = ""
+rootProject.jvmArguments.each { jvmArg ->
+    if (jvmArg && jvmArg.startsWith("-Dlog4j.configurationFile=")) {
+        originalLog4jConfig = jvmArg
+        if (!jvmArg.endsWith("=")) {
+            jvmArg += ","
+        }
+        log4jConfig = jvmArg + "log4j2-cas.xml"
+        findLogArg = true
+        return true
+    }
+}
+if (!findLogArg) {
+    rootProject.jvmArguments.add('-Dlog4j.configurationFile=log4j2.xml,log4j2-cas.xml')
+} else {
+    rootProject.jvmArguments.remove(originalLog4jConfig)
+    rootProject.jvmArguments.add(log4jConfig)
+}
+rootProject.jvmArguments.add('-Dcas.standalone.configurationDirectory=plugins/cas/config')
+rootProject.jvmArguments.add('-Dspring.main.banner-mode=console')
+rootProject.jvmArguments.add('-Dspring.main.show-banner=true')
+rootProject.jvmArguments.add('-Dspring.jndi.ignore=true')
+rootProject.jvmArguments.add('-Dfile.encoding=UTF-8')
+
+rootProject.configurations.compile {
+    exclude group: 'org.zapodot', module: 'jackson-databind-java-optional'
+}
+
+rootProject.configurations.runtime {
+    exclude group: 'org.zapodot', module: 'jackson-databind-java-optional'
+    exclude group: 'ch.qos.logback', module: 'logback-classic'
+}
+
+rootProject.allprojects.repositories.add('maven { url "https://build.shibboleth.net/nexus/content/repositories/releases/" }')
+
+dependencies {
+    pluginLibsCompile 'org.apereo.cas:cas-server-core:' + casVersion,
+                      'org.apereo.cas:cas-server-core-services:' + casVersion,
+                      'org.apereo.cas:cas-server-core-services-registry:' + casVersion,
+                      'org.apereo.cas:cas-server-core-services-authentication:' + casVersion,
+                      'org.apereo.cas:cas-server-core-configuration:' + casVersion,
+                      'org.apereo.cas:cas-server-core-tickets:' + casVersion,
+                      'org.apereo.cas:cas-server-core-authentication:' + casVersion,
+                      'org.apereo.cas:cas-server-core-authentication-api:' + casVersion,
+                      'org.apereo.cas:cas-server-core-logout:' + casVersion,
+                      'org.apereo.cas:cas-server-core-webflow:' + casVersion,
+                      'org.apereo.cas:cas-server-core-util-api:' + casVersion,
+                      'org.apereo.cas:cas-server-support-oauth:' + casVersion,
+                      'org.apereo.cas:cas-server-support-oauth-api:' + casVersion,
+                      'org.apereo.cas:cas-server-support-oauth-core:' + casVersion,
+                      'org.apereo.cas:cas-server-support-oauth-services:' + casVersion,
+                      'org.pac4j:pac4j-core:' + pac4jVersion,
+                      'com.alipay.sdk:alipay-sdk-java:4.10.29.ALL'
+
+    pluginLibsCompile ('org.springframework:spring-test:' + springVersion) {
+        force true
+    }
+
+    pluginLibsRuntime 'com.lmax:disruptor:3.4.2',
+                      'com.fasterxml.jackson.core:jackson-annotations:' + jacksonVersion,
+                      'com.fasterxml.jackson.core:jackson-core:' + jacksonVersion,
+                      'com.fasterxml.jackson.core:jackson-databind:' + jacksonVersion,
+                      'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:' + jacksonVersion,
+                      'com.fasterxml.jackson.datatype:jackson-datatype-guava:' + jacksonVersion,
+                      'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:' + jacksonVersion,
+                      'com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:' + jacksonVersion,
+                      'com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:' + jacksonVersion,
+                      'com.fasterxml.jackson.module:jackson-module-jaxb-annotations:' + jacksonVersion,
+                      'org.apache.tomcat.embed:tomcat-embed-websocket:' + tomcatVersion,
+                      'org.webjars.bower:angular-route:1.3.17',
+                      'org.webjars:angular-ui:0.4.0-3',
+                      'org.webjars.npm:angular-ui-sortable:0.13.4',
+                      'org.webjars:bootstrap:4.1.0',
+                      'org.webjars:bootstrap-select:1.12.4',
+                      'org.webjars:d3js:4.10.2',
+                      'org.webjars:headjs:1.0.3',
+                      'org.webjars:jquery:3.3.1',
+                      'org.webjars:jquery-cookie:1.4.1-1',
+                      'org.webjars:jquery-ui-themes:1.12.1',
+                      'org.webjars:font-awesome:5.0.13',
+                      'org.webjars:Eonasdan-bootstrap-datetimepicker:4.17.47',
+                      'org.webjars:momentjs:2.20.1',
+                      'org.webjars:editable-table:4932ac1',
+                      'org.webjars:datatables-plugins:1.10.16',
+                      'org.webjars:store.js:1.3.17',
+                      'org.webjars:ng-table:4.0.0',
+                      'org.webjars:Semantic-UI:2.2.10',
+                      'org.webjars:knockout:3.4.2',
+                      'org.webjars:lato:0.3.0',
+                      'org.webjars:lodash:4.17.4',
+                      'org.webjars:zxcvbn:4.3.0',
+                      'com.google.guava:guava:' + guavaVersion,
+                      'antlr:antlr:2.7.7',
+                      'aopalliance:aopalliance:1.0',
+                      'org.javassist:javassist:' + javassistVersion,
+                      'org.apache.santuario:xmlsec:2.0.5',
+                      'org.pac4j:pac4j-cas:' + pac4jVersion,
+                      'org.pac4j:pac4j-config:' + pac4jVersion,
+                      'org.pac4j:pac4j-http:' + pac4jVersion,
+                      'org.pac4j:pac4j-oauth:' + pac4jVersion,
+                      'org.jasig.cas.client:cas-client-core:3.5.1',
+                      'dom4j:dom4j:1.6.1',
+                      'org.dom4j:dom4j:2.1.1',
+                      'commons-attributes:commons-attributes-compiler:2.1',
+                      'org.apache.commons:commons-configuration2:2.2',
+                      'commons-jexl:commons-jexl:1.1',
+                      'concurrent:concurrent:1.3.4',
+                      'com.google.code.findbugs:jsr305:3.0.1',
+                      'com.beust:jcommander:1.48',
+                      'joda-time:joda-time:2.9.9',
+                      'com.squareup.okhttp3:logging-interceptor:3.10.0',
+                      'com.squareup.okhttp:okhttp-urlconnection:2.7.5',
+                      'com.squareup.okio:okio:1.14.1',
+                      'com.zaxxer:HikariCP:3.2.0',
+                      'org.codehaus.mojo:animal-sniffer-annotations:1.14',
+                      'org.apache.httpcomponents:httpclient:4.5.6',
+                      'org.apache.httpcomponents:httpcore:4.4.9',
+                      'io.dropwizard.metrics:metrics-servlets:3.2.5',
+                      'io.dropwizard.metrics:metrics-annotation:3.2.5',
+                      'net.bytebuddy:byte-buddy:1.6.14',
+                      'com.squareup.retrofit2:converter-moshi:2.4.0',
+                      'com.nimbusds:lang-tag:1.4.4',
+                      'org.mockito:mockito-core:1.10.19',
+                      'org.hamcrest:hamcrest-core:1.3',
+                      'com.github.javaparser:javaparser-core:3.6.5',
+                      'org.jasypt:jasypt:1.9.2',
+                      'org.jboss:jandex:2.0.3.Final',
+                      'org.bitbucket.b_c:jose4j:0.6.3', // TODO: try to see whether jose4j can be removed
+                      'com.vdurmont:semver4j:2.2.0',
+                      'org.aspectj:aspectjweaver:1.9.1',
+                      'org.aspectj:aspectjrt:1.9.1',
+                      'org.attoparser:attoparser:2.0.5.RELEASE',
+                      'com.github.ben-manes.caffeine:caffeine:2.6.2', // TODO: try to see whether caffeine can be removed
+                      'cglib:cglib-nodep:2.1_3',
+                      'org.cryptacular:cryptacular:1.2.4',
+                      'org.apache.mina:mina-core:2.0.18',
+                      'com.nimbusds:nimbus-jose-jwt:6.0.2',
+                      'io.userinfo:userinfo-java:1.1.0',
+                      'com.github.axet:wget:1.4.9',
+                      'org.apache.logging.log4j:log4j-web:2.12.1',
+                      'org.unbescape:unbescape:1.1.6.RELEASE',
+                      'org.reflections:reflections:0.9.11',
+                      'org.jooq:jool:0.9.12',
+                      'com.nimbusds:oauth2-oidc-sdk:6.5',
+                      'com.mchange:mchange-commons-java:0.2.11',
+                      'org.hjson:hjson:3.0.0',
+                      'geronimo-spec:geronimo-spec-jta:1.0.1B-rc4',
+                      'org.ldaptive:ldaptive:1.2.4',
+                      'javax.validation:validation-api:1.1.0.Final',
+                      'com.fasterxml:classmate:1.3.1',
+                      'org.jboss.logging:jboss-logging:3.3.2.Final',
+                      'org.json:json:20140107',
+                      'com.unboundid:unboundid-ldapsdk:3.2.1',
+                      'org.glassfish.web:el-impl:2.2',
+                      'opensymphony:oscache:2.1.1',
+                      'redis.clients:jedis:2.9.0',
+                      'jline:jline:2.12',
+                      'org.mongodb:mongo-java-driver:3.11.0',
+                      'com.timgroup:java-statsd-client:3.1.0',
+                      'org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec:1.0.1.Final',
+                      'org.influxdb:influxdb-java:2.10',
+                      'org.checkerframework:checker-compat-qual:2.0.0',
+                      'org.apache.directory.api:api-all:1.0.2',
+                      'org.thymeleaf:thymeleaf-spring4:3.0.11.RELEASE',
+                      'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.4.1',
+                      'org.pac4j:spring-webmvc-pac4j:3.0.0',
+                      'org.springframework.webflow:spring-binding:2.5.0.RELEASE',
+                      'org.springframework.shell:spring-shell:1.2.0.RELEASE',
+                      'org.springframework.data:spring-data-redis:1.8.17.RELEASE',
+                      'org.springframework.data:spring-data-mongodb:1.10.15.RELEASE',
+                      'org.springframework.integration:spring-integration-jmx:4.3.18.RELEASE',
+                      'org.springframework.retry:spring-retry:1.2.2.RELEASE',
+                      'com.ryantenney.metrics:metrics-spring:3.1.3',
+                      'org.apereo.service.persondir:person-directory-impl:1.8.9',
+                      'org.apache.servicemix.bundles:org.apache.servicemix.bundles.antlr:2.7.7_5',
+                      'org.apache.servicemix.bundles:org.apache.servicemix.bundles.dom4j:1.6.1_5',
+                      'org.apache.servicemix.bundles:org.apache.servicemix.bundles.xpp3:1.1.4c_7',
+                      'org.apereo.inspektr:inspektr-support-spring:1.8.4.GA',
+                      'org.hibernate:hibernate-hikaricp:5.2.18.Final',
+                      'org.hibernate:hibernate-entitymanager:5.2.18.Final',
+                      'org.hibernate:hibernate-validator:5.4.1.Final',
+                      'org.springframework.security:spring-security-core:4.2.10.RELEASE',
+                      'org.springframework.security:spring-security-crypto:4.2.10.RELEASE',
+                      'org.springframework.boot:spring-boot:' + springbootVersion,
+                      'org.springframework.boot:spring-boot-actuator:' + springbootVersion,
+                      'org.springframework.boot:spring-boot-autoconfigure:' + springbootVersion,
+                      'org.springframework.boot:spring-boot-configuration-metadata:' + springbootVersion,
+                      'org.springframework.boot:spring-boot-configuration-processor:' + springbootVersion,
+                      'org.springframework.boot:spring-boot-devtools:' + springbootVersion,
+                      'org.springframework.boot:spring-boot-starter:' + springbootVersion,
+                      'org.springframework.boot:spring-boot-starter-actuator:' + springbootVersion,
+                      'org.springframework.boot:spring-boot-starter-data-redis:' + springbootVersion,
+                      'org.springframework.boot:spring-boot-starter-mail:' + springbootVersion,
+                      'org.springframework.boot:spring-boot-starter-tomcat:' + springbootVersion,
+                      'org.springframework.boot:spring-boot-starter-web:' + springbootVersion,
+                      'org.springframework.boot:spring-boot-starter-thymeleaf:' + springbootVersion,
+                      'org.springframework.boot:spring-boot-starter-websocket:' + springbootVersion,
+                      'org.springframework.cloud:spring-cloud-commons:1.3.0.RELEASE',
+                      'org.springframework.cloud:spring-cloud-context:1.3.0.RELEASE',
+                      'org.springframework.cloud:spring-cloud-config-client:1.4.0.RELEASE',
+                      
+                      'org.apereo.cas:cas-server-security-filter:2.0.10.4',
+                      'org.springframework.webflow:spring-webflow:2.5.0.RELEASE',
+                      'org.apereo:spring-webflow-client-repo:1.0.3',
+                      'org.apereo.cas:cas-server-core-api-ticket:' + casVersion,
+                      'org.apereo.cas:cas-server-core-api-authentication:' + casVersion,
+                      'org.apereo.cas:cas-server-core-api-events:' + casVersion,
+                      'org.apereo.cas:cas-server-core-api-services:' + casVersion,
+                      'org.apereo.cas:cas-server-core-api-protocol:' + casVersion,
+                      'org.apereo.cas:cas-server-core-api-util:' + casVersion,
+                      'org.apereo.cas:cas-server-core-configuration-api:' + casVersion,
+                      'org.apereo.cas:cas-server-core-api-configuration-model:' + casVersion,
+                      'org.apereo.cas:cas-server-core-api-webflow:' + casVersion,
+                      'org.apereo.cas:cas-server-core-api-validation:' + casVersion,
+                      'org.apereo.cas:cas-server-core-api-web:' + casVersion,
+                      'org.apereo.cas:cas-server-core-authentication-mfa:' + casVersion,
+                      'org.apereo.cas:cas-server-core-authentication-attributes:' + casVersion,
+                      'org.apereo.cas:cas-server-core-api-audit:' + casVersion,
+                      'org.apereo.cas:cas-server-core-api:' + casVersion,
+                      'org.apereo.cas:cas-server-core-api-logout:' + casVersion,
+                      'org.apereo.cas:cas-server-core-api-configuration:' + casVersion,
+
+                      'org.apereo.cas:cas-server-core-util:' + casVersion,
+                      'org.apereo.cas:cas-server-core-tickets-api:' + casVersion,
+                      'org.apereo.cas:cas-server-core-web-api:' + casVersion,
+                      'org.apereo.cas:cas-server-core-web:' + casVersion,
+                      'org.apereo.cas:cas-server-core-webflow-api:' + casVersion,
+                      'org.apereo.cas:cas-server-core-web-api:' + casVersion,
+                      'org.apereo.cas:cas-server-core-web:' + casVersion,
+                      'org.apereo.cas:cas-server-core-validation-api:' + casVersion,
+                      'org.apereo.cas:cas-server-core-validation:' + casVersion,
+                      'org.apereo.cas:cas-server-core-services-api:' + casVersion,
+                      'org.apereo.cas:cas-server-core-monitor:' + casVersion,
+                      'org.apereo.cas:cas-server-core-logout-api:' + casVersion,
+                      'org.apereo.cas:cas-server-core-logging-config:' + casVersion,
+                      'org.apereo.cas:cas-server-core-logging:' + casVersion,
+                      'org.apereo.cas:cas-server-core-events-configuration:' + casVersion,
+                      'org.apereo.cas:cas-server-core-events:' + casVersion,
+                      'org.apereo.cas:cas-server-core-cookie-api:' + casVersion,
+                      'org.apereo.cas:cas-server-core-cookie:' + casVersion,
+                      'org.apereo.cas:cas-server-core-configuration-metadata-repository:' + casVersion,
+                      'org.apereo.cas:cas-server-core-audit-api:' + casVersion,
+                      'org.apereo.cas:cas-server-core-audit:' + casVersion,
+                      'org.apereo.cas:cas-server-core-api-throttle:' + casVersion,
+                      'org.apereo.cas:cas-server-core-api-monitor:' + casVersion,
+
+                      'org.apereo.cas:cas-server-support-throttle:' + casVersion,
+                      'org.apereo.cas:cas-server-support-throttle-core:' + casVersion,
+                      'org.apereo.cas:cas-server-support-themes:' + casVersion,
+                      'org.apereo.cas:cas-server-support-validation:' + casVersion,
+                      'org.apereo.cas:cas-server-support-actions:' + casVersion,
+                      'org.apereo.cas:cas-server-support-configuration:' + casVersion,
+                      'org.apereo.cas:cas-server-support-geolocation:' + casVersion,
+                      'org.apereo.cas:cas-server-support-influxdb-core:' + casVersion,
+                      'org.apereo.cas:cas-server-support-ldap-core:' + casVersion,
+                      'org.apereo.cas:cas-server-support-metrics:' + casVersion,
+                      'org.apereo.cas:cas-server-support-mongo-core:' + casVersion,
+                      'org.apereo.cas:cas-server-support-pac4j-core:' + casVersion,
+                      'org.apereo.cas:cas-server-support-person-directory:' + casVersion,
+                      'org.apereo.cas:cas-server-support-pm:' + casVersion,
+                      'org.apereo.cas:cas-server-support-pm-webflow:' + casVersion,
+                      'org.apereo.cas:cas-server-support-redis-core:' + casVersion,
+                      'org.apereo.cas:cas-server-webapp-config:' + casVersion
+
+//                      'org.apereo.cas:cas-server-support-reports:' + casVersion,
+//                      'org.apereo.cas:cas-server-webapp-init:' + casVersion
+
+
+    pluginLibsRuntime ('com.github.oshi:oshi-core:3.5.0') {
+        exclude group: 'net.java.dev.jna', module: 'jna-platform'
+    }
+    pluginLibsRuntime ('org.springframework:spring-aop:' + springVersion) {
+        force true
+    }
+    pluginLibsRuntime ('org.springframework:spring-beans:' + springVersion) {
+        force true
+    }
+    pluginLibsRuntime ('org.springframework:spring-context:' + springVersion) {
+        force true
+    }
+    pluginLibsRuntime ('org.springframework:spring-context-support:' + springVersion) {
+        force true
+    }
+    pluginLibsRuntime ('org.springframework:spring-core:' + springVersion) {
+        force true
+    }
+    pluginLibsRuntime ('org.springframework:spring-expression:' + springVersion) {
+        force true
+    }
+    pluginLibsRuntime ('org.springframework:spring-jdbc:' + springVersion) {
+        force true
+    }
+    pluginLibsRuntime ('org.springframework:spring-jms:' + springVersion) {
+        force true
+    }
+    pluginLibsRuntime ('org.springframework:spring-orm:' + springVersion) {
+        force true
+    }
+    pluginLibsRuntime ('org.springframework:spring-oxm:' + springVersion) {
+        force true
+    }
+    pluginLibsRuntime ('org.springframework:spring-tx:' + springVersion) {
+        force true
+    }
+    pluginLibsRuntime ('org.springframework:spring-web:' + springVersion) {
+        force true
+    }
+    pluginLibsRuntime ('org.springframework:spring-webmvc:' + springVersion) {
+        force true
+    }
+    pluginLibsRuntime ('org.springframework:spring-websocket:' + springVersion) {
+        force true
+    }
+    pluginLibsRuntime ("org.springmodules:spring-modules-cache:0.8") {
+        exclude(group: "commons-logging", module: "commons-logging")
+        exclude(group: "ant", module: "ant")
+        exclude(group: "xstream", module: "xstream")
+        exclude(group: "commons-lang", module: "commons-lang")
+        exclude(group: "xpp3", module: "xpp3_min")
+        exclude(group: "jcs", module: "jcs")
+        exclude(group: "jboss", module: "jboss-system")
+        exclude(group: "jboss", module: "javassist")
+        exclude(group: "jboss", module: "jboss-cache")
+        exclude(group: "jboss", module: "jboss-jmx")
+        exclude(group: "jboss", module: "jboss-minimal")
+        exclude(group: "jboss", module: "jboss-common")
+        exclude(group: "jgroups", module: "jgroups-all")
+        exclude(group: "log4j", module: "log4j")
+        exclude(group: "xjavadoc", module: "xjavadoc")
+        exclude(group: "jini", module: "xjavadoc")
+        exclude(group: "jini", module: "jsk-platform")
+        exclude(group: "jini", module: "boot")
+        exclude(group: "jini", module: "jsk-lib")
+        exclude(group: "jini", module: "mahalo")
+        exclude(group: "jini", module: "reggie")
+        exclude(group: "jini", module: "start")
+        exclude(group: "jini", module: "webster")
+        exclude(group: "ehcache", module: "ehcache")
+        exclude(group: "gigaspaces", module: "gigaspaces-ce")
+        exclude(group: "commons-collections", module: "commons-collections")
+        exclude(group: "org.springframework", module: "spring")
+        force = true
+    }
+}
+
+buildDir = '../../build'
+rootProject.jar.exclude('org/langhua/ofbiz/cas/**')
+
+task ofbizCasJar(type: Jar) {
+    baseName = 'ofbiz-' + ofbizVersion + '-cas-' + casVersion
+    manifest {
+        attributes(
+            "Implementation-Title": baseName,
+            "Created-By": org.gradle.internal.jvm.Jvm.current()
+        )
+    }
+    from ('../../build/classes/java/main') {
+        include 'org/langhua/ofbiz/cas/**'
+    }
+    from ('src/main/resources') {
+        include '**/spring.factories'
+    }
+    destinationDir = file('webapp/cas-' + casVersion + '/WEB-INF/lib')
+}
+
+rootProject.jar.dependsOn(ofbizCasJar)
+

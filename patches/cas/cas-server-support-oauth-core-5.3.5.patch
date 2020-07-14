@@ -1,0 +1,13 @@
+diff --git a/support/cas-server-support-oauth-core/src/main/java/org/apereo/cas/support/oauth/OAuth20Constants.java b/support/cas-server-support-oauth-core/src/main/java/org/apereo/cas/support/oauth/OAuth20Constants.java
+index 071d8a8..6505d35 100644
+--- a/support/cas-server-support-oauth-core/src/main/java/org/apereo/cas/support/oauth/OAuth20Constants.java
++++ b/support/cas-server-support-oauth-core/src/main/java/org/apereo/cas/support/oauth/OAuth20Constants.java
+@@ -14,7 +14,7 @@
+     String ACR_VALUES = "acr_values";
+     
+     /** Base OAuth 2.0 url. */
+-    String BASE_OAUTH20_URL = "/oauth2.0";
++    String BASE_OAUTH20_URL = "/v2";
+ 
+     /** The redirect uri. */
+     String REDIRECT_URI = "redirect_uri";

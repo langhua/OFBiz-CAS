@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+  <JarScanner className="org.langhua.ofbiz.webapp.jarscan.CasJarScanner">
+    <JarScanFilter className="org.langhua.ofbiz.webapp.jarscan.CasJarScanFilter" defaultPluggabilityScan="false"
+        pluggabilityScan="spring-*.jar,
+                          cas-server-*.jar,
+                          ofbiz-*-cas-*.jar"
+        defaultTldScan="false" tldScan=""/>
+  </JarScanner>
+</Context>
