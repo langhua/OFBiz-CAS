@@ -19,7 +19,11 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -68,21 +72,25 @@ public class OAuth2LoginWorker {
     private static Gson gson = new Gson();
 
     /**
-     * Check OAuth2 Login
+     * Check CAS OAuth2 Login
      *
      * @param request  The HTTP request object for the current JSP or Servlet request.
      * @param response The HTTP response object for the current JSP or Servlet request.
      * @return String
      */
-    public static String oauth2CheckLogin(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public static String oauth2CasCheckLogin(HttpServletRequest request, HttpServletResponse response) throws Exception {
         String credentials = request.getHeader("Authorization");
         HttpSession session = request.getSession();
         Object oldUserLogin = session.getAttribute("userLogin");
-        //System.out.println("=====oauth2CheckLogin======credentials:" + credentials);
+        if (Debug.verboseOn()) {
+            Debug.logVerbose("oauth2CasCheckLogin credentials:" + credentials, module);
+        }
         if (credentials != null) {
             if (credentials.startsWith("Bearer ")) {
                 String accessToken = credentials.replace("Bearer ", "");
-                if (Debug.verboseOn()) Debug.logVerbose("Found HTTP Bearer access_token", module);
+                if (Debug.verboseOn()) {
+                    Debug.logVerbose("Found HTTP Bearer access_token", module);
+                }
                 Delegator delegator = (Delegator) request.getAttribute("delegator");
                 try {
                     if (accessToken.startsWith(AccessToken.PREFIX)) {
@@ -90,19 +98,19 @@ public class OAuth2LoginWorker {
                             session.removeAttribute("userLogin");
                         }
                         GenericValue ticketValue = EntityQuery.use(delegator)
-                                .from("CasServiceTicket")
-                                .where("ticketId", accessToken)
-                                .cache(false)
-                                .queryOne();
+                                                              .from("CasServiceTicket")
+                                                              .where("ticketId", accessToken)
+                                                              .cache(false)
+                                                              .queryOne();
                         if (UtilValidate.isNotEmpty(ticketValue)) {
                             AccessTokenImpl at = getAccessToken(delegator, ticketValue);
                             if (!at.isExpired() && at.getAuthentication() != null && at.getAuthentication().getPrincipal() != null) {
                                 String userLoginId = at.getAuthentication().getPrincipal().getId();
                                 GenericValue userLogin = EntityQuery.use(delegator)
-                                        .from("UserLogin")
-                                        .where("userLoginId", userLoginId)
-                                        .cache(false)
-                                        .queryOne();
+                                                                    .from("UserLogin")
+                                                                    .where("userLoginId", userLoginId)
+                                                                    .cache(false)
+                                                                    .queryOne();
                                 if (UtilValidate.isNotEmpty(userLogin) && "Y".equals(userLogin.getString("enabled")) &&
                                         (userLogin.get("disabledDateTime") == null || UtilDateTime.nowTimestamp().after(userLogin.getTimestamp("disabledDateTime")))) {
                                     doOAuthLogin(userLogin, request);
@@ -125,66 +133,69 @@ public class OAuth2LoginWorker {
         return "success";
     }
 
+    // TODO move this method to passport plugin
     public static String oauth2WechatMiniCheckLogin(HttpServletRequest request, HttpServletResponse response) throws Exception {
         HttpSession session = request.getSession();
         Object olduserLogin = session.getAttribute("userLogin");
         String credentials = request.getHeader("Authorization");
-        System.out.println("=====oauth2WechatMiniCheckLogin======credentials:" + credentials);
+        if (Debug.verboseOn()) {
+            Debug.logVerbose("oauth2WechatMiniCheckLogin credentials:" + credentials, module);
+        }
         if (credentials != null) {
             if (credentials.startsWith("Bearer ")) {
                 String accessToken = credentials.replace("Bearer ", "");
-                if (Debug.verboseOn()) Debug.logVerbose("Found HTTP Bearer access_token", module);
+                if (Debug.verboseOn()) {
+                    Debug.logVerbose("Found HTTP Bearer access_token", module);
+                }
                 Delegator delegator = (Delegator) request.getAttribute("delegator");
                 try {
                     if (accessToken.startsWith("wechatMini-")) {
                         if (olduserLogin == null) {
                             session.removeAttribute("userLogin");
                         }
-                        //判断微信信息是否过期
+                        // check whether wechat token is expired
                         String openId = accessToken.replace("wechatMini-", "");
-                        List<GenericValue> storeList = new ArrayList<GenericValue>();
                         List<EntityExpr> andConditions = UtilMisc.toList(
                                 EntityCondition.makeCondition("openId", openId),
                                 EntityCondition.makeCondition("transferType", "wechat"));
                         EntityCondition whereCondition = EntityCondition.makeCondition(andConditions, EntityJoinOperator.AND);
                         GenericValue openIdSessionRel = EntityQuery.use(delegator)
-                                .from("OpenIdSessionRel")
-                                .where(whereCondition)
-                                .cache(false)
-                                .queryOne();
+                                                                   .from("OpenIdSessionRel")
+                                                                   .where(whereCondition)
+                                                                   .cache(false)
+                                                                   .queryOne();
                         if (!UtilValidate.isNotEmpty(openIdSessionRel)) {
-                            response.sendError(401, "请登录");
+                            response.sendError(401, "Please login");
                             return "error";
                         }
                         long currentTime = System.currentTimeMillis();
                         if (currentTime > Long.parseLong(openIdSessionRel.get("expiredTime").toString())) {
-                            response.sendError(401, "登陆凭据已失效，请重新获取");
+                            response.sendError(401, "Token expired, please refresh it");
                             return "error";
                         } else {
                             request.setAttribute("accessToken", openId);
                             GenericValue userLogin = null;
                             GenericValue thirdMemberInfo = EntityQuery.use(delegator)
-                                    .from("OauthMemberInfo")
-                                    .where("wxopenId", openId)
-                                    .cache(false)
-                                    .queryOne();
+                                                                      .from("OauthMemberInfo")
+                                                                      .where("wxopenId", openId)
+                                                                      .cache(false)
+                                                                      .queryOne();
                             if (UtilValidate.isNotEmpty(thirdMemberInfo)) {
                                 userLogin = EntityQuery.use(delegator)
-                                        .from("UserLogin")
-                                        .where("partyId", thirdMemberInfo.get("partyId"))
-                                        .cache(false)
-                                        .queryOne();
+                                                       .from("UserLogin")
+                                                       .where("partyId", thirdMemberInfo.get("partyId"))
+                                                       .cache(false)
+                                                       .queryOne();
                             }
                             if (!UtilValidate.isNotEmpty(userLogin)) {
                                 userLogin = EntityQuery.use(delegator)
-                                        .from("UserLogin")
-                                        .where("userLoginId", "admin")
-                                        .cache(false)
-                                        .queryOne();
+                                                       .from("UserLogin")
+                                                       .where("userLoginId", "admin")
+                                                       .cache(false)
+                                                       .queryOne();
                             }
                             doOAuthLogin(userLogin, request);
                             request.setAttribute("userLogin", userLogin);
-                            //System.out.println("=====oauth2WechatMiniCheckLogin======request:" + request);
                         }
                     }
                 } catch (Exception e) {
@@ -195,94 +206,115 @@ public class OAuth2LoginWorker {
                     session.removeAttribute("userLogin");
                 }
                 String code = credentials.replace("Bearer-wx-", "");
-                if (Debug.verboseOn()) Debug.logVerbose("Found HTTP Bearer access_token", module);
+                if (Debug.verboseOn()) {
+                    Debug.logVerbose("Found HTTP Bearer access_token", module);
+                }
                 Delegator delegator = (Delegator) request.getAttribute("delegator");
                 try {
                     GenericValue appIdSystemProperty = EntityQuery.use(delegator)
-                            .from("SystemProperty")
-                            .where("systemResourceId", "Entropy_WechatMini", "systemPropertyId", "appId").cache(false)
-                            .queryOne();
-                    System.out.println("===appIdSystemProperty:" + appIdSystemProperty);
+                                                                  .from("SystemProperty")
+                                                                  .where("systemResourceId", "Passport_WechatMini", "systemPropertyId", "appId").cache(false)
+                                                                  .queryOne();
+                    if (Debug.verboseOn()) {
+                        Debug.logVerbose("appIdSystemProperty:" + appIdSystemProperty, module);
+                    }
                     String appId = appIdSystemProperty.get("systemPropertyValue").toString();
                     GenericValue appSecretSystemProperty = EntityQuery.use(delegator)
-                            .from("SystemProperty")
-                            .where("systemResourceId", "Entropy_WechatMini", "systemPropertyId", "appSecret").cache(false)
-                            .queryOne();
-                    System.out.println("===appSecretSystemProperty:" + appSecretSystemProperty);
+                                                                      .from("SystemProperty")
+                                                                      .where("systemResourceId", "Passport_WechatMini", "systemPropertyId", "appSecret").cache(false)
+                                                                      .queryOne();
+                    if (Debug.verboseOn()) {
+                        Debug.logVerbose("appSecretSystemProperty:" + appSecretSystemProperty, module);
+                    }
                     String appSecret = appSecretSystemProperty.get("systemPropertyValue").toString();
                     String jscode2session = UtilProperties.getPropertyValue("wechatLiteInfo.properties", "wechat.lite.jscode2session");
                     String requestUrl = jscode2session + "?" +
-                            "appid=" + appId + "&" +
-                            "secret=" + appSecret + "&" +
-                            "js_code=" + code + "&" +
-                            "grant_type=authorization_code";
-                    System.out.println("oauth2WechatMiniCheckLogin requestUrl:" + requestUrl);
+                                        "appid=" + appId + "&" +
+                                        "secret=" + appSecret + "&" +
+                                        "js_code=" + code + "&" +
+                                        "grant_type=authorization_code";
+                    if (Debug.verboseOn()) {
+                        Debug.logVerbose("oauth2WechatMiniCheckLogin requestUrl:" + requestUrl, module);
+                    }
                     String resultStr = doGet(requestUrl);
+                    @SuppressWarnings("unchecked")
                     HashMap<String, String> resultMap = gson.fromJson(resultStr, HashMap.class);
-                    System.out.println("resultMap:" + resultMap);
+                    if (Debug.verboseOn()) {
+                        Debug.logVerbose("resultMap:" + resultMap, module);
+                    }
                     long expiredTime = System.currentTimeMillis() + 7100 * 1000;
-//                    long expiredTime = System.currentTimeMillis() + 300 * 1000;
                     if (resultMap.containsKey("errcode")) {
-                        response.setStatus(500);
-                        response.sendError(500, "获取openId失败");
+                        response.sendError(500, "Failed to get wechat mini openId");
                         return "error";
                     } else {
                         String openId = resultMap.get("openid");
-                        //System.out.println("openId:" + openId);
+                        if (Debug.verboseOn()) {
+                            Debug.logVerbose("openId:" + openId, module);
+                        }
                         String sessionKey = resultMap.get("session_key");
-                        //System.out.println("sessionKey:" + sessionKey);
+                        if (Debug.verboseOn()) {
+                            Debug.logVerbose("sessionKey:" + sessionKey, module);
+                        }
                         List<GenericValue> storeList = new ArrayList<GenericValue>();
                         List<EntityExpr> andConditions = UtilMisc.toList(
                                 EntityCondition.makeCondition("openId", openId),
                                 EntityCondition.makeCondition("transferType", "wechat"));
                         EntityCondition whereCondition = EntityCondition.makeCondition(andConditions, EntityJoinOperator.AND);
                         GenericValue openIdSessionRel = EntityQuery.use(delegator)
-                                .from("OpenIdSessionRel")
-                                .where(whereCondition)
-                                .cache(false)
-                                .queryOne();
-                        //System.out.println("openIdSessionRel:" + openIdSessionRel);
-                        //如果没有数据则插入，否则更新
+                                                                   .from("OpenIdSessionRel")
+                                                                   .where(whereCondition)
+                                                                   .cache(false)
+                                                                   .queryOne();
+                        if (Debug.verboseOn()) {
+                            Debug.logVerbose("openIdSessionRel:" + openIdSessionRel, module);
+                        }
+                        // if no data found by wechat openId, then insert it, else update
                         if (UtilValidate.isEmpty(openIdSessionRel)) {
-                            //System.out.println("createOpenIdSessionRel:");
+                            if (Debug.verboseOn()) {
+                                Debug.logVerbose("===createOpenIdSessionRel===", module);
+                            }
                             GenericValue newOpenIdSessionRel = delegator.makeValue("OpenIdSessionRel", UtilMisc.toMap("openId", openId, "transferType",
                                     "wechat", "sessionKey", sessionKey, "transferTime", UtilDateTime.nowTimestamp(), "expiredTime", String.valueOf(expiredTime)));
                             delegator.create(newOpenIdSessionRel);
                         } else {
-                            //System.out.println("updateOpenIdSessionRel");
+                            if (Debug.verboseOn()) {
+                                Debug.logVerbose("===updateOpenIdSessionRel===", module);
+                            }
                             openIdSessionRel.set("sessionKey", sessionKey);
                             openIdSessionRel.set("transferTime", UtilDateTime.nowTimestamp());
                             openIdSessionRel.set("expiredTime", String.valueOf(expiredTime));
                             storeList.add(openIdSessionRel);
                             delegator.storeAll(storeList);
                         }
-                        //TODO 根据系统配置加载对应的管理员账号
+                        //TODO load an administrator according to configuration rather than hard coded 'admin'
                         request.setAttribute("openId", openId);
                         GenericValue userLogin = null;
                         GenericValue thirdMemberInfo = EntityQuery.use(delegator)
-                                .from("OauthMemberInfo")
-                                .where("wxopenId", openId)
-                                .cache(false)
-                                .queryOne();
+                                                                  .from("OauthMemberInfo")
+                                                                  .where("wxopenId", openId)
+                                                                  .cache(false)
+                                                                  .queryOne();
                         if (UtilValidate.isNotEmpty(thirdMemberInfo)) {
                             userLogin = EntityQuery.use(delegator)
-                                    .from("UserLogin")
-                                    .where("partyId", thirdMemberInfo.get("partyId"))
-                                    .cache(false)
-                                    .queryOne();
+                                                   .from("UserLogin")
+                                                   .where("partyId", thirdMemberInfo.get("partyId"))
+                                                   .cache(false)
+                                                   .queryOne();
                         }
                         if (!UtilValidate.isNotEmpty(userLogin)) {
                             userLogin = EntityQuery.use(delegator)
-                                    .from("UserLogin")
-                                    .where("userLoginId", "admin")
-                                    .cache(false)
-                                    .queryOne();
+                                                   .from("UserLogin")
+                                                   .where("userLoginId", "admin")
+                                                   .cache(false)
+                                                   .queryOne();
                         }
                         doOAuthLogin(userLogin, request);
+                        if (Debug.verboseOn()) {
+                            Debug.logVerbose("=====oauth2WechatMiniCheckLogin======request:" + request, module);
+                        }
                     }
                 } catch (Exception e) {
-                    response.setStatus(500);
-                    response.sendError(500, "获取openId失败");
+                    response.sendError(500, "Failed to get openId");
                     Debug.logError(e, module);
                     return "error";
                 }
@@ -292,6 +324,7 @@ public class OAuth2LoginWorker {
         return "success";
     }
 
+    // TODO move this method to passport plugin
     public static String oauth2AlipayMiniCheckLogin(HttpServletRequest request, HttpServletResponse response) throws Exception {
         HttpSession session = request.getSession();
         Object olduserLogin = session.getAttribute("userLogin");
@@ -299,58 +332,61 @@ public class OAuth2LoginWorker {
         if (credentials != null) {
             if (credentials.startsWith("Bearer ")) {
                 String accessToken = credentials.replace("Bearer ", "");
-                if (Debug.verboseOn()) Debug.logVerbose("Found HTTP Bearer access_token", module);
+                if (Debug.verboseOn()) {
+                    Debug.logVerbose("Found HTTP Bearer access_token", module);
+                }
                 Delegator delegator = (Delegator) request.getAttribute("delegator");
                 try {
                     if (accessToken.startsWith("alipayMini-")) {
                         if (olduserLogin == null) {
                             session.removeAttribute("userLogin");
                         }
-                        //判断微信信息是否过期
+                        // check whether alipay token expired
                         String openId = accessToken.replace("alipayMini-", "");
-                        List<GenericValue> storeList = new ArrayList<GenericValue>();
                         List<EntityExpr> andConditions = UtilMisc.toList(
                                 EntityCondition.makeCondition("openId", openId),
                                 EntityCondition.makeCondition("transferType", "alipay"));
                         EntityCondition whereCondition = EntityCondition.makeCondition(andConditions, EntityJoinOperator.AND);
                         GenericValue openIdSessionRel = EntityQuery.use(delegator)
-                                .from("OpenIdSessionRel")
-                                .where(whereCondition)
-                                .cache(false)
-                                .queryOne();
+                                                                   .from("OpenIdSessionRel")
+                                                                   .where(whereCondition)
+                                                                   .cache(false)
+                                                                   .queryOne();
                         if (!UtilValidate.isNotEmpty(openIdSessionRel)) {
-                            response.sendError(401, "请登录");
+                            response.sendError(401, "Please login");
                             return "error";
                         }
                         long currentTime = System.currentTimeMillis();
                         if (currentTime > Long.parseLong(openIdSessionRel.get("expiredTime").toString())) {
-                            response.sendError(401, "登陆凭据已失效，请重新获取");
+                            response.sendError(401, "Token expired, please refresh it");
                             return "error";
                         } else {
                             request.setAttribute("accessToken", openId);
                             GenericValue userLogin = null;
                             GenericValue thirdMemberInfo = EntityQuery.use(delegator)
-                                    .from("OauthMemberInfo")
-                                    .where("aliopenId", openId)
-                                    .cache(false)
-                                    .queryOne();
+                                                                      .from("OauthMemberInfo")
+                                                                      .where("aliopenId", openId)
+                                                                      .cache(false)
+                                                                      .queryOne();
                             if (UtilValidate.isNotEmpty(thirdMemberInfo)) {
                                 userLogin = EntityQuery.use(delegator)
-                                        .from("UserLogin")
-                                        .where("partyId", thirdMemberInfo.get("partyId"))
-                                        .cache(false)
-                                        .queryOne();
+                                                       .from("UserLogin")
+                                                       .where("partyId", thirdMemberInfo.get("partyId"))
+                                                       .cache(false)
+                                                       .queryOne();
                             }
                             if (!UtilValidate.isNotEmpty(userLogin)) {
                                 userLogin = EntityQuery.use(delegator)
-                                        .from("UserLogin")
-                                        .where("userLoginId", "admin")
-                                        .cache(false)
-                                        .queryOne();
+                                                       .from("UserLogin")
+                                                       .where("userLoginId", "admin")
+                                                       .cache(false)
+                                                       .queryOne();
                             }
                             doOAuthLogin(userLogin, request);
                             request.setAttribute("userLogin", userLogin);
-                            //System.out.println("=====oauth2WechatMiniCheckLogin======request:" + request);
+                            if (Debug.verboseOn()) {
+                                Debug.logVerbose("=====oauth2AlipayMiniCheckLogin======request:" + request, module);
+                            }
                         }
                     }
                 } catch (Exception e) {
@@ -362,27 +398,29 @@ public class OAuth2LoginWorker {
                     session.removeAttribute("userLogin");
                 }
                 String code = credentials.replace("Bearer-Ali-", "");
-                if (Debug.verboseOn()) Debug.logVerbose("Found HTTP Bearer access_token", module);
+                if (Debug.verboseOn()) {
+                    Debug.logVerbose("Found HTTP Bearer access_token", module);
+                }
                 Delegator delegator = (Delegator) request.getAttribute("delegator");
                 try {
                     GenericValue appIdSystemProperty = EntityQuery.use(delegator)
-                            .from("SystemProperty")
-                            .where("systemResourceId", "Entropy_AlipayMini", "systemPropertyId", "appId").cache(false)
-                            .queryOne();
+                                                                  .from("SystemProperty")
+                                                                  .where("systemResourceId", "Passport_AlipayMini", "systemPropertyId", "appId").cache(false)
+                                                                  .queryOne();
                     String appId = appIdSystemProperty.get("systemPropertyValue").toString();
 
                     GenericValue appPrivateKeySystemProperty = EntityQuery.use(delegator)
-                            .from("SystemProperty")
-                            .where("systemResourceId", "Entropy_AlipayMini", "systemPropertyId", "appPrivateKey").cache(false)
-                            .queryOne();
+                                                                          .from("SystemProperty")
+                                                                          .where("systemResourceId", "Passport_AlipayMini", "systemPropertyId", "appPrivateKey").cache(false)
+                                                                          .queryOne();
                     String appPrivateKey = appPrivateKeySystemProperty.get("systemPropertyValue").toString();
                     GenericValue appPublicKeySystemProperty = EntityQuery.use(delegator)
-                            .from("SystemProperty")
-                            .where("systemResourceId", "Entropy_AlipayMini", "systemPropertyId", "appPublicKey").cache(false)
-                            .queryOne();
+                                                                         .from("SystemProperty")
+                                                                         .where("systemResourceId", "Passport_AlipayMini", "systemPropertyId", "appPublicKey").cache(false)
+                                                                         .queryOne();
                     String appPublicKey = appPublicKeySystemProperty.get("systemPropertyValue").toString();
 
-                    String jscode2session = UtilProperties.getPropertyValue("alipayApi.properties", "wechat.lite.oauth.token");
+                    String jscode2session = UtilProperties.getPropertyValue("alipayApi.properties", "alipay.lite.oauth.token");
                     AlipayClient alipayClient = new DefaultAlipayClient(jscode2session, appId, appPrivateKey, "json", "GBK", appPublicKey, "RSA2");
                     AlipaySystemOauthTokenRequest asotRequest = new AlipaySystemOauthTokenRequest();
                     asotRequest.setGrantType("authorization_code");
@@ -390,12 +428,18 @@ public class OAuth2LoginWorker {
                     AlipaySystemOauthTokenResponse asotrResponse = alipayClient.execute(asotRequest);
 
                     if (asotrResponse.isSuccess()) {
-                        System.out.println("调用成功");
-                        System.out.println(gson.toJson(asotrResponse));
+                        if (Debug.verboseOn()) {
+                            Debug.logVerbose("Alipay token request success", module);
+                            Debug.logVerbose(gson.toJson(asotrResponse), module);
+                        }
                         String openId = asotrResponse.getUserId();
-                        System.out.println("openId:" + openId);
+                        if (Debug.verboseOn()) {
+                            Debug.logVerbose("openId:" + openId, module);
+                        }
                         String sessionKey = asotrResponse.getAccessToken();
-                        System.out.println("sessionKey:" + sessionKey);
+                        if (Debug.verboseOn()) {
+                            Debug.logVerbose("sessionKey:" + sessionKey, module);
+                        }
                         String refreshToken = asotrResponse.getRefreshToken();
 
                         long expiredTime = System.currentTimeMillis() + 3600 * 1000;
@@ -405,19 +449,25 @@ public class OAuth2LoginWorker {
                                 EntityCondition.makeCondition("transferType", "alipay"));
                         EntityCondition whereCondition = EntityCondition.makeCondition(andConditions, EntityJoinOperator.AND);
                         GenericValue openIdSessionRel = EntityQuery.use(delegator)
-                                .from("OpenIdSessionRel")
-                                .where(whereCondition)
-                                .cache(false)
-                                .queryOne();
-                        //System.out.println("openIdSessionRel:" + openIdSessionRel);
-                        //如果没有数据则插入，否则更新
+                                                                   .from("OpenIdSessionRel")
+                                                                   .where(whereCondition)
+                                                                   .cache(false)
+                                                                   .queryOne();
+                        if (Debug.verboseOn()) {
+                            Debug.logVerbose("openIdSessionRel:" + openIdSessionRel, module);
+                        }
+                        // if no data found by alipay openId, then insert it, else update
                         if (UtilValidate.isEmpty(openIdSessionRel)) {
-                            //System.out.println("createOpenIdSessionRel:");
+                            if (Debug.verboseOn()) {
+                                Debug.logVerbose("===createOpenIdSessionRel===", module);
+                            }
                             GenericValue newOpenIdSessionRel = delegator.makeValue("OpenIdSessionRel", UtilMisc.toMap("openId", openId, "transferType",
                                     "alipay", "sessionKey", sessionKey, "refreshToken", refreshToken, "transferTime", UtilDateTime.nowTimestamp(), "expiredTime", String.valueOf(expiredTime)));
                             delegator.create(newOpenIdSessionRel);
                         } else {
-                            //System.out.println("updateOpenIdSessionRel");
+                            if (Debug.verboseOn()) {
+                                Debug.logVerbose("===updateOpenIdSessionRel===", module);
+                            }
                             openIdSessionRel.set("sessionKey", sessionKey);
                             openIdSessionRel.set("refreshToken", refreshToken);
                             openIdSessionRel.set("transferTime", UtilDateTime.nowTimestamp());
@@ -425,41 +475,39 @@ public class OAuth2LoginWorker {
                             storeList.add(openIdSessionRel);
                             delegator.storeAll(storeList);
                         }
-                        //TODO 根据系统配置加载对应的管理员账号
+                        //TODO load an administrator according to configuration rather than hard coded 'admin'
                         request.setAttribute("openId", openId);
                         GenericValue userLogin = null;
                         GenericValue thirdMemberInfo = EntityQuery.use(delegator)
-                                .from("OauthMemberInfo")
-                                .where("aliopenId", openId)
-                                .cache(false)
-                                .queryOne();
+                                                                  .from("OauthMemberInfo")
+                                                                  .where("aliopenId", openId)
+                                                                  .cache(false)
+                                                                  .queryOne();
                         if (UtilValidate.isNotEmpty(thirdMemberInfo)) {
                             userLogin = EntityQuery.use(delegator)
-                                    .from("UserLogin")
-                                    .where("partyId", thirdMemberInfo.get("partyId"))
-                                    .cache(false)
-                                    .queryOne();
+                                                   .from("UserLogin")
+                                                   .where("partyId", thirdMemberInfo.get("partyId"))
+                                                   .cache(false)
+                                                   .queryOne();
                         }
                         if (!UtilValidate.isNotEmpty(userLogin)) {
                             userLogin = EntityQuery.use(delegator)
-                                    .from("UserLogin")
-                                    .where("userLoginId", "admin")
-                                    .cache(false)
-                                    .queryOne();
+                                                   .from("UserLogin")
+                                                   .where("userLoginId", "admin")
+                                                   .cache(false)
+                                                   .queryOne();
                         }
                         doOAuthLogin(userLogin, request);
                     } else {
-                        System.out.println("调用失败");
-                        System.out.println(gson.toJson(asotrResponse));
-                        response.setStatus(500);
-                        response.sendError(500, "获取openId失败");
+                        if (Debug.verboseOn()) {
+                            Debug.logVerbose("Failed to request Alipay token", module);
+                            Debug.logVerbose(gson.toJson(asotrResponse), module);
+                        }
+                        response.sendError(500, "Failed to get alipay openId");
                         return "error";
                     }
-//                    long expiredTime = System.currentTimeMillis() + 300 * 1000;
-
                 } catch (Exception e) {
-                    response.setStatus(500);
-                    response.sendError(500, "获取openId失败");
+                    response.sendError(500, "Failed to get alipay openId");
                     Debug.logError(e, module);
                     return "error";
                 }
@@ -469,6 +517,7 @@ public class OAuth2LoginWorker {
         return "success";
     }
 
+    @SuppressWarnings("unchecked")
     private static AccessTokenImpl getAccessToken(Delegator delegator, GenericValue oauthCodeValue) {
         TicketGrantingTicketImpl tgt = null;
         if (UtilValidate.isNotEmpty(oauthCodeValue.getString("tgtId"))) {
