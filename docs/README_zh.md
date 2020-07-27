@@ -1,9 +1,10 @@
-OFBiz-CAS Plugin
-====
-[EN](README.md)
+[English](README.md) | [中文](docs/README_ZH.md)
+
+# OFBiz-CAS Plugin
+
 
 ### 版权
-[Apache License V2.0](LICENSE.txt)
+[Apache License V2.0](LICENSE)
 
 
 ### 贡献

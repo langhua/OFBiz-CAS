@@ -1,15 +1,77 @@
-OFBiz-CAS Plugin
-====
-[中文](README_zh.md)
+[English](README.md) | [中文](docs/README_ZH.md)
+
+
+# OFBiz-CAS Plugin
 
 
 ### License
-[Apache License V2.0](LICENSE.txt)
+[Apache License V2.0](LICENSE)
 
+<br/>
 
 ### Contributions
-If you have already identified an enhancement or a bug, it is STRONGLY recommended that you simply submit a pull request to address the case. There is no need for special ceremony to create separate issues. The pull request IS the issue and it will be tracked and tagged as such.
+Welcome any kind of contributions to this plugin.
 
+<br/>
+
+### Environment
+This plugin is for OFBiz 17.12.03 with Tomcat 9.0.31 and CAS 5.3.15.1.
+
+<br/>
+
+### Quick Start
+
+**1. Checkout OFBiz 17.12.03 from https://github.com/apache/ofbiz-framework**
+
+<br/>
+
+**2. Apply patches under patches/ofbiz to OFBiz**
+
+<br/>
+
+**3. Download this plugin**
+
+<br/>
+
+**4. Deploy this plugin in plugins/drools/**
+
+<br/>
+
+**5. Gradle 5.0 is OK in my environment. If not in yours, please edit gradle/wrapper/gradle-wrapper.properties, change to use gradle 5.6:**
+
+```
+distributionUrl=https\://services.gradle.org/distributions/gradle-5.6-bin.zip
+```
+
+<br/>
+
+**6. Install OFBiz seed data by command:**
+
+```
+gradle loadAll
+```
+
+<br/>
+
+**7. Start OFBiz by command:**
+
+```
+gradle ofbiz
+```
+
+<br/>
+
+**8. In browser, visit https://localhost:8443/oauth/login**
+
+Username: admin
+
+Password: ofbiz
+
+After login successfully, you can see kie server information.
+
+![kie server](docs/images/sandflower-kie-server-7.17.0.Final.png)
+
+<br/>
 
 ### Functions
 1. Use OFBiz entity engine to store CAS TicketGrantingTicket, ServiceTicket, RegisteredService and etc.

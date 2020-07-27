@@ -23,10 +23,10 @@ under the License.
            xsi:schemaLocation="http://ofbiz.apache.org/Site-Conf http://ofbiz.apache.org/dtds/site-conf.xsd">
     <include location="component://common/webcommon/WEB-INF/handlers-controller.xml"/>
     <preprocessor>
-        <!-- <event name="oauth2AlipayMiniCheckLogin" type="java" path="org.langhua.ofbiz.webapp.control.OAuth2LoginWorker"
+        <event name="oauth2AlipayMiniCheckLogin" type="java" path="org.langhua.ofbiz.webapp.control.OAuth2LoginWorker"
                invoke="oauth2AlipayMiniCheckLogin"/>
         <event name="oauth2WechatMiniCheckLogin" type="java" path="org.langhua.ofbiz.webapp.control.OAuth2LoginWorker"
-               invoke="oauth2WechatMiniCheckLogin"/> -->
+               invoke="oauth2WechatMiniCheckLogin"/>
         <event name="oauth2CasCheckLogin" type="java" path="org.langhua.ofbiz.webapp.control.OAuth2LoginWorker"
                invoke="oauth2CasCheckLogin"/>
     </preprocessor>

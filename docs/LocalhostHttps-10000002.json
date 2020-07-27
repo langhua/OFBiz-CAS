@@ -1,0 +1,32 @@
+{
+  "@class" : "org.apereo.cas.support.oauth.services.OAuthRegisteredService",
+  "clientId": "SandFlower",
+  "clientSecret": "sandflower",
+  "bypassApprovalPrompt": true,
+  "serviceId" : "^https://localhost:8443/.*",
+  "name" : "OFBiz OAuth2",
+  "id" : 10000002,
+  "logo": "https://ofbiz.apache.org/images/ofbiz_logo.png",
+  "evaluationOrder": 10,
+  "jsonFormat": true,
+  "supportedGrantTypes": [ "java.util.HashSet", [ "AUTHORIZATION_CODE", "PASSWORD", 
+                                                  "CLIENT_CREDENTIALS", "REFRESH_TOKEN" ] ],
+  "generateRefreshToken": true,
+  "attributeReleasePolicy" : {
+    "@class" : "org.apereo.cas.services.ReturnAllowedAttributeReleasePolicy",
+    "allowedAttributes" : [ "java.util.ArrayList", 
+                            [ "userLoginId", "partyId", "groupName", "firstName", "lastName", "currentPassword" ]
+                          ],
+    "principalAttributesRepository" : {
+      "@class" : "org.apereo.cas.authentication.principal.DefaultPrincipalAttributesRepository"
+    },
+    "authorizedToReleaseCredentialPassword" : false,
+    "authorizedToReleaseProxyGrantingTicket" : false
+  },
+  "accessStrategy" : {
+    "@class" : "org.apereo.cas.services.DefaultRegisteredServiceAccessStrategy",
+    "enabled" : true,
+    "ssoEnabled" : true,
+    "requireAllAttributes" : false
+  }
+}

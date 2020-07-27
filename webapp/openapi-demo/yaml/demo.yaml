@@ -1,0 +1,349 @@
+###############################################################
+# Licensed to the Tianjin Langhua Ltd. under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+###############################################################
+ 
+openapi: 3.0.0
+info:
+  description: OpenAPI Demo APIs
+  version: 1.0.0
+  title: OpenAPI Demo APIs
+  contact:
+    name: Shi Jinghai
+    email: huaruhai@hotmail.com
+  license:
+    name: Apache License V2
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - description: Localhost Server
+    url: https://localhost:8443/openapi-demo/control
+tags:
+  - name: Demo
+    description: OpenAPI demo
+security:
+  - oauth2Login: []
+  - oauth2Bearer: []
+paths:
+  /testOpenApiDemoService:
+    post:
+      tags:
+        - Demo
+      summary: Get user roles
+      description: Get user roles by a groovy service
+      operationId: testOpenApiDemoService
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: The username to get roles. If empty, the roles of the access token user will be returned.
+                  example: 'admin'
+                viewIndex:
+                  type: integer
+                  description: View page index
+                  example: "1"
+                viewSize:
+                  type: integer
+                  description: View size per page
+                  example: "10"
+              required:
+                - viewIndex
+                - viewSize
+      responses:
+        200:
+          description: The user roles returned.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/GetUserRolesSuccess'
+                  - $ref: '#/components/schemas/CommonError'
+              examples:
+                Success:
+                  $ref: '#/components/examples/GetUserRolesSuccess'
+                Error:
+                  $ref: '#/components/examples/CommonError'
+        401:
+          description: The access token is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        405:
+          description: Request method not supported, only POST method allowed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MethodNotAllowedError'
+
+components:
+  schemas:
+    GetUserRolesSuccess:
+      description: Return user roles
+      type: object
+      properties:
+        partyId:
+          type: string
+          description: User Id
+          example: '10001'
+        username:
+          type: string
+          description: user name
+          example: 'admin'
+        status:
+          description: >
+            status
+              * 200
+          type: integer
+          format: int32
+          enum:
+            - 200
+        result:
+          description: result of this api
+          type: string
+          example: success
+        timestamp:
+          description: timestamp of running this api
+          type: number
+          format: long
+          example: 1544518149125
+        roles:
+          type: array
+          description: a set of roles
+          items:
+            type: string
+          example: ["VP", "Manager of Store No.1"]
+      required:
+        - partyId
+        - username
+        - status
+        - result
+
+    CommonError:
+      description: Return common error message.
+      type: object
+      properties:
+        status:
+          description: >
+            status code
+              * 200
+          type: integer
+          format: int32
+          enum:
+            - 200
+        result:
+          description: Result of the api
+          type: string
+          example: 'error'
+        timestamp:
+          description: Timestamp of running this api
+          type: number
+          format: long
+          example: 1544518149125
+        message:
+          description: error message
+          type: string
+          example: "No message available"
+        path:
+          description: The uri requested
+          type: string
+          example: "/openapi-demo/control/testOpenApiDemoService"
+      required:
+        - status
+        - result
+
+    UnauthorizedError:
+      description: The access token is invalid
+      type: object
+      properties:
+        status:
+          description: >
+            Status code
+              * 401
+          type: integer
+          format: int32
+          enum:
+            - 401
+        error:
+          description: >
+            Error type
+              * Unauthorized
+          type: string
+          enum:
+            - Unauthorized
+        timestamp:
+          description: Timestamp of running this api
+          type: number
+          format: long
+          example: 1544518149125
+        message:
+          description: Error message
+          type: string
+          example: "No message available"
+        path:
+          description: The uri requested
+          type: string
+          example: "/openapi-demo/control/testOpenApiDemoService"
+      required:
+        - status
+        - error
+      example: {
+                 "timestamp": 1544518149125,
+                 "status": 401,
+                 "error": "Unauthorized",
+                 "message": "No message available",
+                 "path": "/openapi-demo/control/testOpenApiDemoService"
+               }
+
+    ForbiddenError:
+      description: The error of forbidden.
+      type: object
+      properties:
+        status:
+          description: >
+            Status code
+              * 403
+          type: integer
+          enum:
+            - 403
+        error:
+          description: >
+            Error type
+              * Forbidden
+          type: string
+          enum:
+            - Forbidden
+        timestamp:
+          description: Timestamp of running this api
+          type: number
+          format: long
+          example: 1544518149125
+        message:
+          description: Error message
+          type: string
+          example: "No message available"
+        path:
+          description: The uri requested
+          type: string
+          example: "/oauth/v2/accessToken"
+      required:
+        - status
+        - error
+      example: {
+                 "timestamp": 1544518149125,
+                 "status": 403,
+                 "error": "Forbidden",
+                 "message": "No message available",
+                 "path": "/openapi-demo/control/testOpenApiDemoService"
+               }
+        
+    MethodNotAllowedError:
+      description: The error of method not allowed
+      type: object
+      properties:
+        status:
+          description: Status code
+          type: number
+          format: int
+          enum:
+            - 405
+        error:
+          description: Error type
+          type: string
+          example: "Method Not Allowed"
+        message:
+          description: Error message
+          type: string
+          example: "Request method 'POST' not supported"
+        timestamp:
+          description: Timestamp of running this api
+          type: number
+          format: long
+          example: 1544553057099
+        path:
+          description: The uri requested
+          type: string
+          example: "/openapi-demo/control/testOpenApiDemoService"
+        exception:
+          description: Exception class
+          type: string
+          example: "org.springframework.web.HttpRequestMethodNotSupportedException"
+      required:
+        - error
+        - status
+      example: {
+                 "timestamp": 1544553057099,
+                 "status": 405,
+                 "error": "Method Not Allowed",
+                 "exception": "org.springframework.web.HttpRequestMethodNotSupportedException",
+                 "message": "Request method 'POST' not supported",
+                 "path": "/openapi-demo/control/testOpenApiDemoService"
+               }
+
+  examples:
+    GetUserRolesSuccess:
+      summary: Get user roles success
+      value: {
+               "timestamp": 1544518149125,
+               "status": 200,
+               "result": "success",
+               "partyId": "10001",
+               "username": "admin",
+               "roles": ["VP", "Manager of Store No.1"]
+             }
+
+    CommonError:
+      summary: Common error message
+      value: {
+               "timestamp": 1544518149125,
+               "status": 200,
+               "result": "error",
+               "message": "Error message",
+               "path": "/openapi-demo/control/testOpenApiDemoService"
+             }
+
+  parameters:
+    access_token:
+      in: query
+      name: access_token
+      description: access token
+      required: true
+      schema:
+        type: string
+      example: "AT-7--cEerwho2pOGI2Tw2Mm1hN838KGzvSR1"
+
+  securitySchemes:
+    oauth2Login:
+      type: oauth2
+      description: OAuth2 login
+      flows:
+        password:
+          tokenUrl: '/oauth/v2/accessToken'
+
+    oauth2Bearer:
+      type: http
+      description: OAuth2 access token in http bearer header
+      scheme: bearer

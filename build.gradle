@@ -357,7 +357,7 @@ dependencies {
 
 buildDir = '../../build'
 rootProject.jar.exclude('org/langhua/ofbiz/cas/**')
-
+ 
 task ofbizCasJar(type: Jar) {
     baseName = 'ofbiz-' + ofbizVersion + '-cas-' + casVersion
     manifest {

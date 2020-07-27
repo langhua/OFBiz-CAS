@@ -86,5 +86,4 @@
         
         <prim-key field="id"/>
     </entity>
-    
 </entitymodel>

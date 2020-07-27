@@ -1,0 +1,345 @@
+###############################################################
+# Licensed to the Tianjin Langhua Ltd. under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+###############################################################
+ 
+openapi: 3.0.0
+info:
+  description: OAuth2 OpenAPI of OFBiz CAS plugin
+  version: 1.0.0
+  title: OAuth2 OpenAPI
+  license:
+    name: Apache License V2
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - description: Localhost Server
+    url: https://localhost:8443/oauth/v2
+tags:
+  - name: Authorization
+    description: Authorize a user by clientId, username and password or by clientId and clientSecret
+  - name: Profile
+    description: Get a user's profile by access token
+  - name: Demo
+    description: OpenAPI demo
+paths:
+  /accessToken:
+    post:
+      tags:
+        - Authorization
+      summary: one step authorization
+      description: one step authorization to get an access_token for a user
+      operationId: authorize
+      parameters:
+        - in: query
+          name: grant_type
+          description: >
+            grant type:
+              - password: grant by password
+          required: true
+          schema:
+            type: string
+            enum:
+              - 'password'
+        - in: query
+          name: client_id
+          description: client id
+          required: true
+          schema:
+            type: string
+          example: SandFlower
+        - in: query
+          name: client_secret
+          description: client secret, app secret and etc., if this parameter exists, username and password will be ignored.
+          required: false
+          schema:
+            type: string
+          example: sandflower
+        - in: query
+          name: username
+          description: user name
+          required: false
+          schema:
+            type: string
+          example: admin
+        - in: query
+          name: password
+          description: user's password
+          required: false
+          schema:
+            type: string
+          example: ofbiz
+      responses:
+        200:
+          description: authorized successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginSuccess'
+        401:
+          description: failed to authorize
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginError'
+
+  /profile:
+    get:
+      tags:
+        - Profile
+      summary: Fetch a user's profile by access token
+      description: Profile may include firstName, lastName, partyId, currentPassword, permissions and roles
+      operationId: profile
+      parameters:
+        - $ref: '#/components/parameters/access_token'
+      responses:
+        200:
+          description: Fetched profile successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ProfileClientSuccess'
+                  - $ref: '#/components/schemas/ProfileUserSuccess'
+              examples: 
+                ProfileClientSuccess:
+                  $ref: '#/components/examples/ProfileClientSuccess'
+                ProfileUserSuccess:
+                  $ref: '#/components/examples/ProfileUserSuccess'
+        401:
+          description: Failed to fetch profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileError'
+        405:
+          description: Request method not supported, only 'GET' method is supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileMethodError'
+
+components:
+  schemas:
+    LoginSuccess:
+      description: Return authorization success info.
+      type: object
+      properties:
+        access_token:
+          description: access token
+          type: string
+          example: "AT-7--cEerwho2pOGI2Tw2Mm1hN838KGzvSR1"
+        token_type:
+          description: token type
+          type: string
+          example: bearer
+        expires_in:
+          description: how many seconds the access token will be expired
+          type: number
+          format: long
+          example: 2592000
+        refresh_token:
+          description: refresh token
+          type: string
+          example: "RT-6-ZgZuQG7ph7ZnfzI-K-WCbfKyWDUQ8Wqd"
+      required:
+        - access_token
+        - expires_in
+      example: {
+                 "access_token": "AT-7--cEerwho2pOGI2Tw2Mm1hN838KGzvSR1",
+                 "token_type": "bearer",
+                 "expires_in": 2592000,
+                 "refresh_token": "RT-6-ZgZuQG7ph7ZnfzI-K-WCbfKyWDUQ8Wqd"
+               }
+
+    LoginError:
+      description: Return login failed info.
+      type: object
+      properties:
+        status:
+          description: status
+          type: number
+          format: int
+          enum:
+            - 401
+        error:
+          description: error
+          type: string
+          example: "Unauthorized"
+        message:
+          description: error message
+          type: string
+          example: "No message available"
+        timestamp:
+          description: time stamp of this operation
+          type: number
+          format: long
+          example: 1544518149125
+        path:
+          description: uri requested
+          type: string
+          example: "/oauth/v2/accessToken"
+      required:
+        - status
+        - error
+        - timestamp
+      example: {
+                 "timestamp": 1544518149125,
+                 "status": 401,
+                 "error": "Unauthorized",
+                 "message": "No message available",
+                 "path": "/oauth/v2/accessToken"
+               }
+        
+    ProfileClientSuccess:
+      description: Fetch client profile successfully.
+      type: object
+      properties:
+        service:
+          description: service name
+          type: string
+        client_id:
+          description: client id
+          type: string
+      required:
+        - service
+        - client_id
+
+    ProfileUserSuccess:
+      description: Fetch user profile successfully.
+      type: object
+      properties:
+        service:
+          description: service name
+          type: string
+        client_id:
+          description: client id
+          type: string
+        username:
+          description: user name
+          type: string
+        userprofile:
+          description: user profile
+          type: object
+        permissions:
+          description: user permissions
+          type: array
+          items:
+            type: string
+        roles:
+          description: user roles
+          type: array
+          items:
+            type: string
+      required:
+        - service
+        - client_id
+        - username
+
+    ProfileError:
+      description: Access token not found or expired.
+      type: object
+      properties:
+        error:
+          description: error message
+          type: array
+          items:
+            type: string
+      required:
+        - error
+      example: {
+                 "error": [
+                            "expired_accessToken"
+                          ]
+               }
+
+    ProfileMethodError:
+      description: Request method error.
+      type: object
+      properties:
+        status:
+          description: http response code
+          type: number
+          format: int
+          enum:
+            - 405
+        error:
+          description: brief message
+          type: string
+          example: "Method Not Allowed"
+        message:
+          description: detail message
+          type: string
+          example: "Request method 'POST' not supported"
+        timestamp:
+          description: time stamp of this operation
+          type: number
+          format: long
+          example: 1544553057099
+        path:
+          description: uri requested
+          type: string
+          example: "/oauth/v2/accessToken"
+        exception:
+          description: exception class name
+          type: string
+          example: "org.springframework.web.HttpRequestMethodNotSupportedException"
+      required:
+        - error
+        - status
+      example: {
+                 "timestamp": 1544553057099,
+                 "status": 405,
+                 "error": "Method Not Allowed",
+                 "exception": "org.springframework.web.HttpRequestMethodNotSupportedException",
+                 "message": "Request method 'POST' not supported",
+                 "path": "/oauth/v2/profile"
+               }
+
+  examples:
+    ProfileClientSuccess:
+      summary: Fetch client profile success
+      value: {
+               "service" : "OFBiz OAuth2",
+               "client_id" : "clientId"
+             }
+
+    ProfileUserSuccess:
+      summary: Fetch user profile success
+      value: {
+               "permissions" : [ "FULLADMIN" ],
+               "service" : "OFBiz OAuth2",
+               "roles" : [ "_NA_", "CONTACT", "ORDER_CLERK", "BILL_FROM_VENDOR", "CAL_ATTENDEE", "ADDRESSEE", "APPROVER", "CAL_OWNER", "SHIPMENT_CLERK", "EMAIL_ADMIN", "IMAGEAPPROVER", "SALES_REP", "MANAGER", "BUYER", "REQ_TAKER" ],
+               "userprofile" : {
+                 "currentPassword" : "$SHA$/0$quENtfe_Lp34wqWP6K0CbCveevU",
+                 "firstName" : "THE",
+                 "lastName" : "ADMINISTRATOR",
+                 "partyId" : "admin",
+                 "userLoginId" : "admin"
+               },
+               "client_id" : "clientId",
+               "username" : "admin"
+             }
+
+  parameters:
+    access_token:
+      in: query
+      name: access_token
+      description: access token
+      required: true
+      schema:
+        type: string
+      example: "AT-7--cEerwho2pOGI2Tw2Mm1hN838KGzvSR1"

@@ -1,0 +1,338 @@
+###############################################################
+# Licensed to the Tianjin Langhua Ltd. under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+###############################################################
+
+openapi: 3.0.0
+info:
+  description: OFBiz-CAS模块OAuth2开放接口
+  version: 1.0.0
+  title: OAuth2开放接口
+  license:
+    name: Apache License V2
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - description: 接口请求地址
+    url: https://localhost:8443/oauth/v2
+tags:
+  - name: 认证
+    description: 用户认证
+  - name: 资料
+    description: 获取已认证用户的资料
+paths:
+  /accessToken:
+    post:
+      tags:
+        - 认证
+      summary: 一步用户认证
+      description: 一步用户认证并获得access_token
+      operationId: authorize
+      parameters:
+        - in: query
+          name: grant_type
+          description: >
+            认证类型：
+              - password: 密码认证类型
+          required: true
+          schema:
+            type: string
+            enum:
+              - 'password'
+        - in: query
+          name: client_id
+          description: 应用程序Id
+          required: true
+          schema:
+            type: string
+          example: clientId
+        - in: query
+          name: client_secret
+          description: 应用程序密码。当有这个参数时，username和password参数将被忽略。
+          required: false
+          schema:
+            type: string
+          example: clientSecret
+        - in: query
+          name: username
+          description: 用户名
+          required: false
+          schema:
+            type: string
+          example: demo
+        - in: query
+          name: password
+          description: 密码
+          required: false
+          schema:
+            type: string
+          example: 123456
+      responses:
+        200:
+          description: 认证成功。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginSuccess'
+        401:
+          description: 认证失败。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginError'
+
+  /profile:
+    get:
+      tags:
+        - 资料
+      summary: 获取用户资料
+      description: 包括用户姓名、权限、角色等
+      operationId: profile
+      parameters:
+        - $ref: '#/components/parameters/access_token'
+      responses:
+        200:
+          description: 成功获取用户资料。
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ProfileClientSuccess'
+                  - $ref: '#/components/schemas/ProfileUserSuccess'
+              examples: 
+                ProfileClientSuccess:
+                  $ref: '#/components/examples/ProfileClientSuccess'
+                ProfileUserSuccess:
+                  $ref: '#/components/examples/ProfileUserSuccess'
+        401:
+          description: 获取用户资料失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileError'
+        405:
+          description: 不支持的请求方式，只能使用get方式请求
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileMethodError'
+
+components:
+  schemas:
+    LoginSuccess:
+      description: 返回认证成功的信息。
+      type: object
+      properties:
+        access_token:
+          description: 访问用凭证
+          type: string
+          example: "AT-7--cEerwho2pOGI2Tw2Mm1hN838KGzvSR1"
+        token_type:
+          description: 凭证类型
+          type: string
+          example: bearer
+        expires_in:
+          description: 访问用凭证的有效时长（秒）
+          type: number
+          format: long
+          example: 2592000
+        refresh_token:
+          description: 刷新用凭证
+          type: string
+          example: "RT-6-ZgZuQG7ph7ZnfzI-K-WCbfKyWDUQ8Wqd"
+      required:
+        - access_token
+        - expires_in
+      example: {
+                 "access_token": "AT-7--cEerwho2pOGI2Tw2Mm1hN838KGzvSR1",
+                 "token_type": "bearer",
+                 "expires_in": 2592000,
+                 "refresh_token": "RT-6-ZgZuQG7ph7ZnfzI-K-WCbfKyWDUQ8Wqd"
+               }
+
+    LoginError:
+      description: 认证错误信息。
+      type: object
+      properties:
+        status:
+          description: 状态
+          type: number
+          format: int
+          enum:
+            - 401
+        error:
+          description: 错误
+          type: string
+          example: "Unauthorized"
+        message:
+          description: 错误详细信息
+          type: string
+          example: "No message available"
+        timestamp:
+          description: 时间戳
+          type: number
+          format: long
+          example: 1544518149125
+        path:
+          description: 访问路径
+          type: string
+          example: "/oauth/v2/accessToken"
+      required:
+        - status
+        - error
+        - timestamp
+      example: {
+                 "timestamp": 1544518149125,
+                 "status": 401,
+                 "error": "Unauthorized",
+                 "message": "No message available",
+                 "path": "/oauth/v2/accessToken"
+               }
+        
+    ProfileClientSuccess:
+      description: 返回获取资料成功的信息。
+      type: object
+      properties:
+        service:
+          description: 服务名称
+          type: string
+        client_id:
+          description: 应用程序Id
+          type: string
+      required:
+        - service
+        - client_id
+
+    ProfileUserSuccess:
+      description: 返回获取资料成功的信息。
+      type: object
+      properties:
+        service:
+          description: 服务名称
+          type: string
+        client_id:
+          description: 应用程序Id
+          type: string
+        username:
+          description: 用户名
+          type: string
+        userprofile:
+          description: 用户个人信息
+          type: object
+        permissions:
+          description: 用户权限
+          type: array
+          items:
+            type: string
+        roles:
+          description: 用户角色
+          type: array
+          items:
+            type: string
+      required:
+        - service
+        - client_id
+        - username
+
+    ProfileError:
+      description: 返回access_token没有找到或过期错误。
+      type: object
+      properties:
+        error:
+          description: 错误信息
+          type: array
+          items:
+            type: string
+      required:
+        - error
+
+    ProfileMethodError:
+      description: 返回请求方式错误。
+      type: object
+      properties:
+        status:
+          description: 状态
+          type: number
+          format: int
+          enum:
+            - 405
+        error:
+          description: 错误
+          type: string
+          example: "Method Not Allowed"
+        message:
+          description: 错误详细信息
+          type: string
+          example: "Request method 'POST' not supported"
+        timestamp:
+          description: 时间戳
+          type: number
+          format: long
+          example: 1544553057099
+        path:
+          description: 访问路径
+          type: string
+          example: "/oauth/v2/accessToken"
+        exception:
+          description: 异常错误源
+          type: string
+          example: "org.springframework.web.HttpRequestMethodNotSupportedException"
+      required:
+        - error
+        - status
+      example: {
+                 "timestamp": 1544553057099,
+                 "status": 405,
+                 "error": "Method Not Allowed",
+                 "exception": "org.springframework.web.HttpRequestMethodNotSupportedException",
+                 "message": "Request method 'POST' not supported",
+                 "path": "/oauth/v2/profile"
+               }
+
+  examples:
+    ProfileClientSuccess:
+      summary: Fetch client profile success
+      value: {
+               "service" : "OFBiz OAuth2",
+               "client_id" : "clientId"
+             }
+
+    ProfileUserSuccess:
+      summary: Fetch user profile success
+      value: {
+               "permissions" : [ "FULLADMIN" ],
+               "service" : "OFBiz OAuth2",
+               "roles" : [ "_NA_", "CONTACT", "ORDER_CLERK", "BILL_FROM_VENDOR", "CAL_ATTENDEE", "ADDRESSEE", "APPROVER", "CAL_OWNER", "SHIPMENT_CLERK", "EMAIL_ADMIN", "IMAGEAPPROVER", "SALES_REP", "MANAGER", "BUYER", "REQ_TAKER" ],
+               "userprofile" : {
+                 "currentPassword" : "$SHA$/0$quENtfe_Lp34wqWP6K0CbCveevU",
+                 "firstName" : "THE",
+                 "lastName" : "ADMINISTRATOR",
+                 "partyId" : "admin",
+                 "userLoginId" : "admin"
+               },
+               "client_id" : "clientId",
+               "username" : "admin"
+             }
+
+  parameters:
+    access_token:
+      in: query
+      name: access_token
+      description: 访问令牌
+      required: true
+      schema:
+        type: string
+      example: "AT-7--cEerwho2pOGI2Tw2Mm1hN838KGzvSR1"

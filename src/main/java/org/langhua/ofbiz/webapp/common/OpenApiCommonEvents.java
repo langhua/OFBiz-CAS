@@ -48,7 +48,8 @@ public class OpenApiCommonEvents {
         "thisRequestUri",
         "org.apache.tomcat.util.net.secure_protocol_version",
         "userLogin",
-        "accessToken"
+        "accessToken",
+        "org.apache.logging.log4j.web.Log4jServletFilter.FILTERED"
     };
 
     public static String jsonResponseFromRequestAttributes(HttpServletRequest request, HttpServletResponse response) {
@@ -72,9 +73,8 @@ public class OpenApiCommonEvents {
 
             if (message.startsWith("You do not have permission to invoke the service ")) {
                 status = 403;
-            } else if (message.startsWith("Cabinet Conflit")) {
+            } else if (message.startsWith("Equipment is under control of someone else ")) {
                 status = 409;
-                message = "此柜子别人正在操作，请过段时间再操作！";
             } else {
                 status = 400;
             }
