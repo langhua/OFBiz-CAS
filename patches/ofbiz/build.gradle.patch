@@ -1,0 +1,13 @@
+diff --git a/build.gradle b/build.gradle
+index d6e27a0..6ef6ea8 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -47,7 +47,7 @@
+ ext.pluginsDir = "${rootDir}/plugins"
+ 
+ // java settings
+-List jvmArguments = ['-Xms128M', '-Xmx1024M']
++ext.jvmArguments = ['-Xms128M', '-Xmx1024M']
+ if (project.hasProperty('jvmArgs')) {
+     jvmArguments = jvmArgs.tokenize()
+ }
