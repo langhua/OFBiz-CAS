@@ -48,7 +48,7 @@ distributionUrl=https\://services.gradle.org/distributions/gradle-5.0-bin.zip
 **6. Install OFBiz seed data by command:**
 
 ```
-gradle loadAll
+gradlew loadAll
 ```
 
 <br/>
@@ -230,7 +230,7 @@ Url example:
 https://localhost:8443/oauth/v2/profile?access_token=ACCESS_TOKEN
 ```
 
-The user file in web browser:
+The user profile in web browser:
 
 ![cas oauth2 profile](docs/images/cas-oauth-profile.png)
 
