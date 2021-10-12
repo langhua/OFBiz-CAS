@@ -1,4 +1,4 @@
-[English](README.md) | [中文](docs/README_ZH.md)
+[English](README.md) | [中文](docs/README_zh.md)
 
 
 # OFBiz-CAS Plugin
