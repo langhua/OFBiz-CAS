@@ -7,7 +7,7 @@
     <title>Entity of OpenAPI Demo</title>
     
     <view-entity entity-name="OpenApiDemoEntity"
-                 package-name="org.langhua.ofbiz.demo.openapi"
+                 package-name="langhua.ofbiz.demo.openapi"
                  title="Demo entity by user login and security group">
         <member-entity entity-name="UserLoginSecurityGroup" entity-alias="ULSG"/>
         <member-entity entity-name="SecurityGroup" entity-alias="SG"/>

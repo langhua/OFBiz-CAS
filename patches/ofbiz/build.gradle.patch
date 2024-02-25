@@ -1,13 +1,19 @@
+Index: build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
 diff --git a/build.gradle b/build.gradle
-index d6e27a0..6ef6ea8 100644
---- a/build.gradle
-+++ b/build.gradle
-@@ -47,7 +47,7 @@
- ext.pluginsDir = "${rootDir}/plugins"
- 
- // java settings
--List jvmArguments = ['-Xms128M', '-Xmx1024M']
-+ext.jvmArguments = ['-Xms128M', '-Xmx1024M']
- if (project.hasProperty('jvmArgs')) {
-     jvmArguments = jvmArgs.tokenize()
+--- a/build.gradle	(revision 768d0780afb2e8a70acb9017a7ded9d4e72dfa30)
++++ b/build.gradle	(date 1708871301387)
+@@ -160,6 +160,10 @@
+         maven {
+             url "https://clojars.org/repo"
+         }
++        maven {
++            // net.shibboleth.tool:xmlsectool:2.0.0
++            url "https://build.shibboleth.net/maven/releases/"
++        }
+     }
  }
+

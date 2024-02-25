@@ -7,7 +7,7 @@
     <title>Entity of CAS/OAuth2 Component</title>
     
 	<entity entity-name="CasTicketGrantingTicket"
-			package-name="org.langhua.ofbiz.cas"
+			package-name="langhua.ofbiz.cas"
         	title="CAS ticket granting ticket entity">
         <field name="tgtId" type="id-vlong"><description>Ticket granting ticket id</description></field>
         <field name="ticketType" type="short-varchar"/>
@@ -30,7 +30,7 @@
     </entity>
 
 	<entity entity-name="CasServiceTicket"
-			package-name="org.langhua.ofbiz.cas"
+			package-name="langhua.ofbiz.cas"
         	title="CAS service ticket entity">
         <field name="ticketId" type="id-vlong"><description>Service ticket id</description></field>
         <field name="numberOfTimesUsed" type="numeric"><description>Number of times used</description></field>
@@ -55,7 +55,7 @@
     </entity>
 
 	<entity entity-name="CasRegisteredService"
-			package-name="org.langhua.ofbiz.cas"
+			package-name="langhua.ofbiz.cas"
         	title="CAS registered service entity">
         <field name="id" type="id-long"><description>Id</description></field>
         <field name="serviceId" type="value"><description>Registered service id</description></field>

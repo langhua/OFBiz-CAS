@@ -1,7 +1,11 @@
+Index: framework/catalina/src/main/java/org/apache/ofbiz/catalina/container/CatalinaContainer.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
 diff --git a/framework/catalina/src/main/java/org/apache/ofbiz/catalina/container/CatalinaContainer.java b/framework/catalina/src/main/java/org/apache/ofbiz/catalina/container/CatalinaContainer.java
-index d300b70..8b64183 100644
---- a/framework/catalina/src/main/java/org/apache/ofbiz/catalina/container/CatalinaContainer.java
-+++ b/framework/catalina/src/main/java/org/apache/ofbiz/catalina/container/CatalinaContainer.java
+--- a/framework/catalina/src/main/java/org/apache/ofbiz/catalina/container/CatalinaContainer.java	(revision 768d0780afb2e8a70acb9017a7ded9d4e72dfa30)
++++ b/framework/catalina/src/main/java/org/apache/ofbiz/catalina/container/CatalinaContainer.java	(date 1708706185165)
 @@ -20,6 +20,8 @@
  
  import java.io.File;
@@ -19,17 +23,17 @@ index d300b70..8b64183 100644
  import org.apache.catalina.Context;
  import org.apache.catalina.Engine;
  import org.apache.catalina.Globals;
-@@ -51,6 +52,7 @@
+@@ -50,6 +51,7 @@
+ import org.apache.catalina.ha.ClusterManager;
  import org.apache.catalina.ha.tcp.ReplicationValve;
  import org.apache.catalina.ha.tcp.SimpleTcpCluster;
- import org.apache.catalina.loader.WebappLoader;
 +import org.apache.catalina.startup.Constants;
  import org.apache.catalina.startup.ContextConfig;
  import org.apache.catalina.startup.Tomcat;
  import org.apache.catalina.tribes.group.GroupChannel;
-@@ -68,9 +70,11 @@
+@@ -67,9 +69,11 @@
+ import org.apache.ofbiz.base.container.ContainerConfig;
  import org.apache.ofbiz.base.container.ContainerConfig.Configuration;
- import org.apache.ofbiz.base.container.ContainerConfig.Configuration.Property;
  import org.apache.ofbiz.base.container.ContainerException;
 +import org.apache.ofbiz.base.location.FlexibleLocation;
  import org.apache.ofbiz.base.start.Start;
@@ -39,10 +43,11 @@ index d300b70..8b64183 100644
  import org.apache.ofbiz.base.util.UtilValidate;
  import org.apache.ofbiz.entity.util.EntityUtilProperties;
  import org.apache.ofbiz.webapp.WebAppUtil;
-@@ -495,9 +499,26 @@
-             ComponentConfig.WebappInfo appInfo, Property clusterProp) throws ContainerException {
+@@ -510,10 +514,29 @@
+             ComponentConfig.WebappInfo appInfo, Configuration.Property clusterProp) throws ContainerException {
  
          StandardContext context = new StandardContext();
++
 +        String location = getWebappRootLocation(appInfo);
 +
 +        String contextXmlFilePath = new StringBuilder().append("file:///").append(location).append("/").append(Constants.ApplicationContextXml).toString();
@@ -51,19 +56,21 @@ index d300b70..8b64183 100644
 +            contextXmlUrl = FlexibleLocation.resolveLocation(contextXmlFilePath);
 +            contextXmlFilePath = new StringBuilder().append(location).append("/").append(Constants.ApplicationContextXml).toString();
 +            File contextXmlFile = FileUtil.getFile(contextXmlFilePath);
-+            if(contextXmlFile.exists() && contextXmlFile.isFile()) { 
-+                Debug.logInfo(contextXmlFilePath + " found and will be loaded.", module);
++            if(contextXmlFile.exists() && contextXmlFile.isFile()) {
++                Debug.logInfo(contextXmlFilePath + " found and will be loaded.", MODULE);
 +                context.setConfigFile(contextXmlUrl);
 +            } else {
 +                // Debug.logInfo(contextXmlFilePath + " not found or not a file.", module);
 +            }
 +        } catch (MalformedURLException e) {
-+            Debug.logInfo(contextXmlFilePath+ " not found.", module);
++            Debug.logInfo(contextXmlFilePath+ " not found.", MODULE);
 +        }
 +
+         context.setDefaultWebXml(System.getProperty("ofbiz.home") + "/framework/catalina/config/web.xml");
          Tomcat.initWebappDefaults(context);
  
 -        String location = getWebappRootLocation(appInfo);
++//        String location = getWebappRootLocation(appInfo);
          boolean contextIsDistributable = isContextDistributable(configuration, appInfo);
  
          context.setParent(host);

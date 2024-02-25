@@ -1,49 +1,59 @@
-def ofbizVersion = '17.12.03',
+def ofbizVersion = '22.01',
     casVersion = '5.3.15.1',
+    tomcatVersion = '9.0.82',
     pac4jVersion = '3.6.1',
     jacksonVersion = '2.9.9',
-    tomcatVersion = '9.0.31',
     guavaVersion = '25.0-jre',
     javassistVersion = '3.22.0-GA',
     springVersion = '4.3.25.RELEASE',
     springbootVersion = '1.5.18.RELEASE'
 
-def findLogArg = false
+def logArgFound = false
 def originalLog4jConfig = ""
 def log4jConfig = ""
-rootProject.jvmArguments.each { jvmArg ->
-    if (jvmArg && jvmArg.startsWith("-Dlog4j.configurationFile=")) {
+def xmxArg = null
+def baseLangOpensFound = false
+
+applicationDefaultJvmArgs.each { jvmArg ->
+    if (jvmArg && jvmArg.startsWith("-Dlog4j.configurationFile=") && !logArgFound) {
         originalLog4jConfig = jvmArg
         if (!jvmArg.endsWith("=")) {
             jvmArg += ","
         }
         log4jConfig = jvmArg + "log4j2-cas.xml"
-        findLogArg = true
-        return true
+        logArgFound = true
+    }
+    if (jvmArg && jvmArg.startsWith("-Xmx")) {
+        xmxArg = jvmArg
+    }
+    if (jvmArg && jvmArg.startsWith("--add-opens=java.base/java.lang=ALL-UNNAMED")) {
+        baseLangOpensFound = true
     }
 }
-if (!findLogArg) {
-    rootProject.jvmArguments.add('-Dlog4j.configurationFile=log4j2.xml,log4j2-cas.xml')
+
+if (!logArgFound) {
+    applicationDefaultJvmArgs.add('-Dlog4j.configurationFile=log4j2.xml,log4j2-cas.xml')
 } else {
-    rootProject.jvmArguments.remove(originalLog4jConfig)
-    rootProject.jvmArguments.add(log4jConfig)
+    applicationDefaultJvmArgs.remove(originalLog4jConfig)
+    applicationDefaultJvmArgs.add(log4jConfig)
 }
-rootProject.jvmArguments.add('-Dcas.standalone.configurationDirectory=plugins/cas/config')
-rootProject.jvmArguments.add('-Dspring.main.banner-mode=console')
-rootProject.jvmArguments.add('-Dspring.main.show-banner=true')
-rootProject.jvmArguments.add('-Dspring.jndi.ignore=true')
-rootProject.jvmArguments.add('-Dfile.encoding=UTF-8')
-
-rootProject.configurations.compile {
-    exclude group: 'org.zapodot', module: 'jackson-databind-java-optional'
+if (xmxArg) {
+    applicationDefaultJvmArgs.remove(xmxArg)
 }
+applicationDefaultJvmArgs.add('-Xmx2048M')
+if (!baseLangOpensFound) {
+    applicationDefaultJvmArgs.add('--add-opens=java.base/java.lang=ALL-UNNAMED')
+}
+applicationDefaultJvmArgs.add('-Dcas.standalone.configurationDirectory=plugins/cas/config')
+applicationDefaultJvmArgs.add('-Dspring.main.banner-mode=console')
+applicationDefaultJvmArgs.add('-Dspring.main.show-banner=true')
+applicationDefaultJvmArgs.add('-Dspring.jndi.ignore=true')
+applicationDefaultJvmArgs.add('-Dfile.encoding=UTF-8')
 
-rootProject.configurations.runtime {
+configurations.all {
     exclude group: 'org.zapodot', module: 'jackson-databind-java-optional'
     exclude group: 'ch.qos.logback', module: 'logback-classic'
 }
-
-rootProject.allprojects.repositories.add('maven { url "https://build.shibboleth.net/nexus/content/repositories/releases/" }')
 
 dependencies {
     pluginLibsCompile 'org.apereo.cas:cas-server-core:' + casVersion,
@@ -62,7 +72,8 @@ dependencies {
                       'org.apereo.cas:cas-server-support-oauth-core:' + casVersion,
                       'org.apereo.cas:cas-server-support-oauth-services:' + casVersion,
                       'org.pac4j:pac4j-core:' + pac4jVersion,
-                      'com.alipay.sdk:alipay-sdk-java:4.10.29.ALL'
+                      'com.alipay.sdk:alipay-sdk-java:4.10.29.ALL',
+                      'com.google.code.gson:gson:2.8.9'
 
     pluginLibsCompile ('org.springframework:spring-test:' + springVersion) {
         force true
@@ -274,10 +285,6 @@ dependencies {
                       'org.apereo.cas:cas-server-support-redis-core:' + casVersion,
                       'org.apereo.cas:cas-server-webapp-config:' + casVersion
 
-//                      'org.apereo.cas:cas-server-support-reports:' + casVersion,
-//                      'org.apereo.cas:cas-server-webapp-init:' + casVersion
-
-
     pluginLibsRuntime ('com.github.oshi:oshi-core:3.5.0') {
         exclude group: 'net.java.dev.jna', module: 'jna-platform'
     }
@@ -351,28 +358,28 @@ dependencies {
         exclude(group: "gigaspaces", module: "gigaspaces-ce")
         exclude(group: "commons-collections", module: "commons-collections")
         exclude(group: "org.springframework", module: "spring")
-        force = true
+        force true
     }
 }
 
 buildDir = '../../build'
-rootProject.jar.exclude('org/langhua/ofbiz/cas/**')
- 
+rootProject.jar.exclude('langhua/ofbiz/cas/**')
+
 task ofbizCasJar(type: Jar) {
-    baseName = 'ofbiz-' + ofbizVersion + '-cas-' + casVersion
+    archiveBaseName = 'ofbiz-' + ofbizVersion + '-cas-' + casVersion
     manifest {
         attributes(
-            "Implementation-Title": baseName,
+            "Implementation-Title": archiveBaseName,
             "Created-By": org.gradle.internal.jvm.Jvm.current()
         )
     }
     from ('../../build/classes/java/main') {
-        include 'org/langhua/ofbiz/cas/**'
+        include 'langhua/ofbiz/cas/**'
     }
     from ('src/main/resources') {
         include '**/spring.factories'
     }
-    destinationDir = file('webapp/cas-' + casVersion + '/WEB-INF/lib')
+    destinationDir file('webapp/cas-' + casVersion + '/WEB-INF/lib')
 }
 
 rootProject.jar.dependsOn(ofbizCasJar)

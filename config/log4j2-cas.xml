@@ -163,7 +163,7 @@
         <AsyncLogger name="org.apereo.inspektr.audit.support" level="info" includeLocation="true">
             <AppenderRef ref="casAudit"/>
         </AsyncLogger>
-        <AsyncLogger name="org.langhua.ofbiz.cas" level="info" additivity="false">
+        <AsyncLogger name="langhua.ofbiz.cas" level="info" additivity="false">
             <AppenderRef ref="casFile"/>
         </AsyncLogger>
     </Loggers>

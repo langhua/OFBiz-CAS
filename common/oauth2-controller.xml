@@ -23,17 +23,17 @@ under the License.
            xsi:schemaLocation="http://ofbiz.apache.org/Site-Conf http://ofbiz.apache.org/dtds/site-conf.xsd">
     <include location="component://common/webcommon/WEB-INF/handlers-controller.xml"/>
     <preprocessor>
-        <event name="oauth2AlipayMiniCheckLogin" type="java" path="org.langhua.ofbiz.webapp.control.OAuth2LoginWorker"
+        <event name="oauth2AlipayMiniCheckLogin" type="java" path="langhua.ofbiz.webapp.control.OAuth2LoginWorker"
                invoke="oauth2AlipayMiniCheckLogin"/>
-        <event name="oauth2WechatMiniCheckLogin" type="java" path="org.langhua.ofbiz.webapp.control.OAuth2LoginWorker"
+        <event name="oauth2WechatMiniCheckLogin" type="java" path="langhua.ofbiz.webapp.control.OAuth2LoginWorker"
                invoke="oauth2WechatMiniCheckLogin"/>
-        <event name="oauth2CasCheckLogin" type="java" path="org.langhua.ofbiz.webapp.control.OAuth2LoginWorker"
+        <event name="oauth2CasCheckLogin" type="java" path="langhua.ofbiz.webapp.control.OAuth2LoginWorker"
                invoke="oauth2CasCheckLogin"/>
     </preprocessor>
 
     <request-map uri="json">
         <security direct-request="false"/>
-        <event type="java" path="org.langhua.ofbiz.webapp.common.OpenApiCommonEvents"
+        <event type="java" path="langhua.ofbiz.webapp.common.OpenApiCommonEvents"
                invoke="jsonResponseFromRequestAttributes"/>
         <response name="success" type="none"/>
         <response name="error" type="none"/>

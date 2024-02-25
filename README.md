@@ -3,6 +3,14 @@
 
 # OFBiz-CAS Plugin
 
+OFBiz-CAS Plugin provides an OAuth 2.0 server in OFBiz.
+
+### Environment
+- JDK 17
+- OFBiz 18.12
+- CAS 5.3.15.1
+
+<br/>
 
 ### License
 [Apache License V2.0](LICENSE)
@@ -14,18 +22,13 @@ Welcome any kind of contributions to this plugin.
 
 <br/>
 
-### Environment
-This plugin is for OFBiz 17.12.03 with JDK 1.8.x, Tomcat 9.0.31 and CAS 5.3.15.1.
-
-<br/>
-
 ### Quick Start
 
-**1. Checkout OFBiz 17.12.03 from https://github.com/apache/ofbiz-framework**
+**1. Checkout OFBiz release18.12 from https://github.com/apache/ofbiz-framework**
 
 <br/>
 
-**2. Download this plugin**
+**2. Checkout this plugin**
 
 <br/>
 
@@ -37,10 +40,12 @@ This plugin is for OFBiz 17.12.03 with JDK 1.8.x, Tomcat 9.0.31 and CAS 5.3.15.1
 
 <br/>
 
-**5. Edit gradle/wrapper/gradle-wrapper.properties, change to use gradle 5.0:**
+**5. Edit build.gradle, add shibboleth maven repository:**
 
 ```
-distributionUrl=https\://services.gradle.org/distributions/gradle-5.0-bin.zip
+maven {
+    url "https://build.shibboleth.net/maven/releases/"
+}
 ```
 
 <br/>
@@ -130,7 +135,7 @@ After login successfully, you can see this page:
 
 The OAuth2 grant supported as described in [https://apereo.github.io/cas/5.3.x/installation/OAuth-OpenId-Authentication.html](CAS document).
 
-![oauth grants](https://alexbilbie.com/images/oauth-grants.svg)
+![oauth grants](docs/images/oauth-grants.svg)
 
 <br/>
 
@@ -380,6 +385,19 @@ After input username admin, password ofbiz, an error page shown:
 
 
 <br/>
+
+### CAS Brief
+
+The Central Authentication Service (CAS) was developed at Yale University between 2000-2002.  In 2003, a release of the server core code was refactored in collaboration with Rutgers University and in 2004 we collectively placed the code in the public domain under the oversight of Jasig (later Apereo).
+
+Personally I think OAuth 2.0 is a simplified version of CAS protocol, as a service ticket of CAS protocol can be used only once, generally an OAuth 2.0 access token can be used for a period of time. This reduces the stress of token(ticket) generation/calculation dramatically.
+
+<br/>
+
+### References
+1. [OAuth 2.0](https://oauth.net/2/)
+2. [CAS](https://developers.yale.edu/cas-central-authentication-service)
+3. [Apereo CAS](https://www.apereo.org/projects/cas)
 
 Thanks for reading this document.
 

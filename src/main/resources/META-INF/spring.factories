@@ -1,5 +1,5 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=org.langhua.ofbiz.cas.authentication.OFBizAuthenticationEventExecutionPlanConfiguration,\
-org.langhua.ofbiz.cas.util.OFBizUniqueTicketIdGeneratorConfiguration,\
-org.langhua.ofbiz.cas.services.OFBizServiceRegistryConfiguration,\
-org.langhua.ofbiz.cas.ticket.registry.OFBizTicketRegistryConfiguration,\
-org.langhua.ofbiz.cas.oauth.OFBizOAuthConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=langhua.ofbiz.cas.authentication.OFBizAuthenticationEventExecutionPlanConfiguration,\
+langhua.ofbiz.cas.util.OFBizUniqueTicketIdGeneratorConfiguration,\
+langhua.ofbiz.cas.services.OFBizServiceRegistryConfiguration,\
+langhua.ofbiz.cas.ticket.registry.OFBizTicketRegistryConfiguration,\
+langhua.ofbiz.cas.oauth.OFBizOAuthConfiguration
