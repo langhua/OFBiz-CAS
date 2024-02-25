@@ -133,7 +133,7 @@ After login successfully, you can see this page:
 
 **10. OAuth2 Grant Tests:**
 
-The OAuth2 grant supported as described in [https://apereo.github.io/cas/5.3.x/installation/OAuth-OpenId-Authentication.html](CAS document).
+The OAuth2 grant supported as described in [CAS document](https://apereo.github.io/cas/5.3.x/installation/OAuth-OpenId-Authentication.html).
 
 ![oauth grants](docs/images/oauth-grants.svg)
 
@@ -268,7 +268,7 @@ There is an openapi-demo webapp to show how to use this plugin in openapi.
 
 **1. How to build webapp/cas-5.3.15.1 for this plugin**
 
-1.1 Check out [cas-overlay-template-ofbiz](https://github.com/langhua/cas-overlay-template-ofbiz/), select ofbiz-17.12.03-cas-5.3.15.1 tag.
+1.1 Check out [cas-overlay-template-ofbiz](https://github.com/langhua/cas-overlay-template-ofbiz/), select ofbiz-22.01-cas-5.3.15.1 tag.
 
 1.2 Run 'mvn clean package' to build target/cas-5.3.15.1, it's the webapp/cas-5.3.15.1 in this plugin.
 
@@ -278,31 +278,35 @@ There is an openapi-demo webapp to show how to use this plugin in openapi.
 
 **2. Why apply patches/ofbiz/startup-with-webapp-context.xml.patch**
 
-As you see, when deploying Apereo CAS in tomcat, the META-INF/context.xml is applied. In OFBiz 17.12.03, it's not. With patches/ofbiz/startup-with-webapp-context.xml.patch, META-INF/context.xml is configured, and then spring-boot and relative jars can be scanned and loaded as expected.
+As you see, when deploying Apereo CAS in tomcat, the META-INF/context.xml is applied. In OFBiz 22.01, it's not. With patches/ofbiz/startup-with-webapp-context.xml.patch, META-INF/context.xml is configured, and then spring-boot and relative jars can be scanned and loaded as expected.
 
 ```java
          StandardContext context = new StandardContext();
-+        String location = getWebappRootLocation(appInfo);
-+
-+        String contextXmlFilePath = new StringBuilder().append("file:///").append(location).append("/").append(Constants.ApplicationContextXml).toString();
-+        URL contextXmlUrl = null;
-+        try {
-+            contextXmlUrl = FlexibleLocation.resolveLocation(contextXmlFilePath);
-+            contextXmlFilePath = new StringBuilder().append(location).append("/").append(Constants.ApplicationContextXml).toString();
-+            File contextXmlFile = FileUtil.getFile(contextXmlFilePath);
-+            if(contextXmlFile.exists() && contextXmlFile.isFile()) { 
-+                Debug.logInfo(contextXmlFilePath + " found and will be loaded.", module);
-+                context.setConfigFile(contextXmlUrl);
-+            } else {
-+                // Debug.logInfo(contextXmlFilePath + " not found or not a file.", module);
-+            }
-+        } catch (MalformedURLException e) {
-+            Debug.logInfo(contextXmlFilePath+ " not found.", module);
-+        }
-+
-         Tomcat.initWebappDefaults(context);
- 
--        String location = getWebappRootLocation(appInfo);
+        +
+        +        String location = getWebappRootLocation(appInfo);
+        +
+        +        String contextXmlFilePath = new StringBuilder().append("file:///").append(location).append("/").append(Constants.ApplicationContextXml).toString();
+        +        URL contextXmlUrl = null;
+        +        try {
+        +            contextXmlUrl = FlexibleLocation.resolveLocation(contextXmlFilePath);
+        +            contextXmlFilePath = new StringBuilder().append(location).append("/").append(Constants.ApplicationContextXml).toString();
+        +            File contextXmlFile = FileUtil.getFile(contextXmlFilePath);
+        +            if(contextXmlFile.exists() && contextXmlFile.isFile()) {
+        +                Debug.logInfo(contextXmlFilePath + " found and will be loaded.", MODULE);
+        +                context.setConfigFile(contextXmlUrl);
+        +            } else {
+        +                // Debug.logInfo(contextXmlFilePath + " not found or not a file.", module);
+        +            }
+        +        } catch (MalformedURLException e) {
+        +            Debug.logInfo(contextXmlFilePath+ " not found.", MODULE);
+        +        }
+        +
+        context.setDefaultWebXml(System.getProperty("ofbiz.home") + "/framework/catalina/config/web.xml");
+        Tomcat.initWebappDefaults(context);
+
+        -        String location = getWebappRootLocation(appInfo);
+        +//        String location = getWebappRootLocation(appInfo);
+        boolean contextIsDistributable = isContextDistributable(configuration, appInfo);
 ```
 
 context.setConfigFile(contextXmlUrl) is the core line.
@@ -311,37 +315,18 @@ context.setConfigFile(contextXmlUrl) is the core line.
 
 **3. Why apply patches/ofbiz/build.gradle.patch**
 
-In this patch, rootProject.jvmArguments is exposed to submodule's build.gradle to extend or change them:
+In this patch, shibboleth repository is added:
 
 ```groovy
--List jvmArguments = ['-Xms128M', '-Xmx1024M']
-+ext.jvmArguments = ['-Xms128M', '-Xmx1024M']
-```
-
-and then in the build.gradle of OFBiz-CAS plugin, the rootProject.jvmArguments are extended:
-
-```groovy
-rootProject.jvmArguments.each { jvmArg ->
-    if (jvmArg && jvmArg.startsWith("-Dlog4j.configurationFile=")) {
-        originalLog4jConfig = jvmArg
-        if (!jvmArg.endsWith("=")) {
-            jvmArg += ","
-        }
-        log4jConfig = jvmArg + "log4j2-cas.xml"
-        findLogArg = true
-        return true
+         maven {
+             url "https://clojars.org/repo"
+         }
++        maven {
++            // net.shibboleth.tool:xmlsectool:2.0.0
++            url "https://build.shibboleth.net/maven/releases/"
++        }
     }
 }
-if (!findLogArg) {
-    rootProject.jvmArguments.add('-Dlog4j.configurationFile=log4j2.xml,log4j2-cas.xml')
-} else {
-    rootProject.jvmArguments.remove(originalLog4jConfig)
-    rootProject.jvmArguments.add(log4jConfig)
-}
-
-...
-rootProject.jvmArguments.add('-Dcas.standalone.configurationDirectory=plugins/cas/config')
-...
 ```
 
 <br/>
