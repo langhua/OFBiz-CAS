@@ -7,7 +7,7 @@ OFBiz-CAS Plugin provides an OAuth 2.0 server in OFBiz.
 
 ### Environment
 - JDK 17
-- OFBiz 18.12
+- OFBiz 22.01
 - CAS 5.3.15.1
 
 <br/>
@@ -24,7 +24,7 @@ Welcome any kind of contributions to this plugin.
 
 ### Quick Start
 
-**1. Checkout OFBiz release18.12 from https://github.com/apache/ofbiz-framework**
+**1. Checkout OFBiz release22.01 from https://github.com/apache/ofbiz-framework**
 
 <br/>
 
@@ -383,6 +383,8 @@ Personally I think OAuth 2.0 is a simplified version of CAS protocol, as a servi
 1. [OAuth 2.0](https://oauth.net/2/)
 2. [CAS](https://developers.yale.edu/cas-central-authentication-service)
 3. [Apereo CAS](https://www.apereo.org/projects/cas)
+
+<br/><br/>
 
 Thanks for reading this document.
 

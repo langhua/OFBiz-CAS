@@ -2,6 +2,14 @@
 
 # OFBiz-CAS模块
 
+OFBiz-CAS模块令OFBiz提供OAuth 2.0认证服务。
+
+### 环境
+- JDK 17
+- OFBiz 22.01
+- CAS 5.3.15.1
+
+<br/>
 
 ### 版权
 [Apache License V2.0](LICENSE)
@@ -13,14 +21,9 @@
 
 <br/>
 
-### 环境
-本模块用于OFBiz 17.12.03、JDK 1.8.x、Tomcat 9.0.31以及CAS 5.3.15.1。
-
-<br/>
-
 ### 快速启动
 
-**1. 从https://github.com/apache/ofbiz-framework检出OFBiz 17.12.03**
+**1. 从https://github.com/apache/ofbiz-framework检出OFBiz 22.01**
 
 <br/>
 
@@ -36,10 +39,12 @@
 
 <br/>
 
-**5. 编辑gradle/wrapper/gradle-wrapper.properties文件，改为使用gradle 5.0:**
+**5. 编辑${ofbiz_home}/build.gradle，添加shibboleth maven库：**
 
 ```
-distributionUrl=https\://services.gradle.org/distributions/gradle-5.0-bin.zip
+maven {
+    url "https://build.shibboleth.net/maven/releases/"
+}
 ```
 
 <br/>
@@ -127,9 +132,9 @@ gradlew ofbiz
 
 **10. OAuth2认证测试用例:**
 
-OAuth2认证支持的方式，在 [https://apereo.github.io/cas/5.3.x/installation/OAuth-OpenId-Authentication.html](CAS文档)中有详细说明。
+OAuth2认证支持的方式，在[CAS文档](https://apereo.github.io/cas/5.3.x/installation/OAuth-OpenId-Authentication.html)中有详细说明。
 
-![oauth认证](https://alexbilbie.com/images/oauth-grants.svg)
+![oauth认证](images/oauth-grants.svg)
 
 <br/>
 
@@ -261,7 +266,7 @@ https://localhost:8443/oauth/v2/profile?access_token=ACCESS_TOKEN
 
 **1. 如何构建本模块的webapp/cas-5.3.15.1？**
 
-1.1 检出[cas-overlay-template-ofbiz](https://github.com/langhua/cas-overlay-template-ofbiz/)，选择 ofbiz-17.12.03-cas-5.3.15.1标签。
+1.1 检出[cas-overlay-template-ofbiz](https://github.com/langhua/cas-overlay-template-ofbiz/)，选择 ofbiz-22.01-cas-5.3.15.1标签。
 
 1.2 运行'mvn clean package'来构建target/cas-5.3.15.1，该目录即是本模块的webapp/cas-5.3.15.1。
 
@@ -271,7 +276,7 @@ https://localhost:8443/oauth/v2/profile?access_token=ACCESS_TOKEN
 
 **2. 为什么打补丁patches/ofbiz/startup-with-webapp-context.xml.patch？**
 
-当把Apereo CAS部署到Tomcat里时，META-INF/context.xml会起作用。OFBiz 17.12.03中，它不起作用。打了patches/ofbiz/startup-with-webapp-context.xml.patch这个补丁后，META-INF/context.xml就生效了，然后spring-boot以及相关的jar都会如预期一样被扫描和加载。
+当把Apereo CAS部署到Tomcat里时，META-INF/context.xml会起作用。OFBiz 22.01中，它不起作用。打了patches/ofbiz/startup-with-webapp-context.xml.patch这个补丁后，META-INF/context.xml就生效了，然后spring-boot以及相关的jar都会如预期一样被扫描和加载。
 
 ```java
          StandardContext context = new StandardContext();
@@ -304,37 +309,18 @@ context.setConfigFile(contextXmlUrl)是核心代码。
 
 **3. 为什么打patches/ofbiz/build.gradle.patch补丁**
 
-这个补丁，把rootProject.jvmArguments暴露出来，让模块的build.gradle能扩展或修改:
+这个补丁，添加了shibboleth库：
 
 ```groovy
--List jvmArguments = ['-Xms128M', '-Xmx1024M']
-+ext.jvmArguments = ['-Xms128M', '-Xmx1024M']
-```
-
-在OFBiz-CAS模块的build.gradle中，rootProject.jvmArguments被扩展了:
-
-```groovy
-rootProject.jvmArguments.each { jvmArg ->
-    if (jvmArg && jvmArg.startsWith("-Dlog4j.configurationFile=")) {
-        originalLog4jConfig = jvmArg
-        if (!jvmArg.endsWith("=")) {
-            jvmArg += ","
-        }
-        log4jConfig = jvmArg + "log4j2-cas.xml"
-        findLogArg = true
-        return true
+         maven {
+             url "https://clojars.org/repo"
+         }
++        maven {
++            // net.shibboleth.tool:xmlsectool:2.0.0
++            url "https://build.shibboleth.net/maven/releases/"
++        }
     }
 }
-if (!findLogArg) {
-    rootProject.jvmArguments.add('-Dlog4j.configurationFile=log4j2.xml,log4j2-cas.xml')
-} else {
-    rootProject.jvmArguments.remove(originalLog4jConfig)
-    rootProject.jvmArguments.add(log4jConfig)
-}
-
-...
-rootProject.jvmArguments.add('-Dcas.standalone.configurationDirectory=plugins/cas/config')
-...
 ```
 
 <br/>
@@ -376,8 +362,23 @@ public interface OAuth20Constants {
 
 ![cas redirect fail](images/cas-oauth2-step1-error.png)
 
+<br/>
+
+### CAS简介
+
+中心认证服务(Central Authentication Service，简称CAS)由耶鲁大学2000-2002开发。2003年，与罗格斯大学合作完善核心代码，并于2004年由开源组织Jasig（后更名为Apereo）管理。
+
+个人认为OAuth 2.0是CAS协议的简化版本，CAS协议中的认证凭证仅一次有效，而通常OAuth 2.0的访问凭证在一段时间内有效。这大大降低了服务器生成/计算凭证的算力压力。
 
 <br/>
+
+### 参考资料
+
+1. [OAuth 2.0](https://oauth.net/2/)
+2. [CAS](https://developers.yale.edu/cas-central-authentication-service)
+3. [Apereo CAS](https://www.apereo.org/projects/cas)
+
+<br/><br/>
 
 感谢阅读本文档。
 
