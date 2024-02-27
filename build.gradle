@@ -78,6 +78,9 @@ dependencies {
     pluginLibsCompile ('org.springframework:spring-test:' + springVersion) {
         force true
     }
+    pluginLibsCompile ('org.yaml:snakeyaml:1.23') {
+        force true
+    }
 
     pluginLibsRuntime 'com.lmax:disruptor:3.4.2',
                       'com.fasterxml.jackson.core:jackson-annotations:' + jacksonVersion,
