@@ -372,11 +372,13 @@ public interface OAuth20Constants {
 
 <br/>
 
+
 ### 参考资料
 
 1. [OAuth 2.0](https://oauth.net/2/)
 2. [CAS](https://developers.yale.edu/cas-central-authentication-service)
 3. [Apereo CAS](https://www.apereo.org/projects/cas)
+4. [2024年如何编译cas-5.3.15.1](cas-5.3.15.1-build.md)
 
 <br/><br/>
 
