@@ -55,7 +55,7 @@ public class OFBizOAuth20ClientAuthenticator implements Authenticator<UsernamePa
 	@Override
     public void validate(final UsernamePasswordCredentials credentials, final WebContext context) throws CredentialsException {
         try {
-            Debug.logInfo("OFBiz authenticating credential [{}]", module, credentials);
+            Debug.logInfo("OFBiz authenticating credential [%s]", module, credentials);
 
             final String id = credentials.getUsername();
             final String secret = credentials.getPassword();
@@ -80,7 +80,7 @@ public class OFBizOAuth20ClientAuthenticator implements Authenticator<UsernamePa
             final CommonProfile profile = new CommonProfile();
             profile.setId(id);
             credentials.setUserProfile(profile);
-            Debug.logInfo("OFBiz authenticated user profile [{}]", module, profile);
+            Debug.logInfo("OFBiz authenticated user profile [%s]", module, profile);
         } catch (final Exception e) {
             throw new CredentialsException("Cannot login user using CAS internal authentication", e);
         }

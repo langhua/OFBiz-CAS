@@ -35,7 +35,10 @@ tags:
   - name: Demo
     description: OpenAPI demo
 security:
-  - oauth2Login: []
+  - codeLogin: []
+  - implicitLogin: []
+  - passwordLogin: []
+  - clientLogin: []
   - oauth2Bearer: []
 paths:
   /testOpenApiDemoService:
@@ -336,11 +339,34 @@ components:
       example: "AT-7--cEerwho2pOGI2Tw2Mm1hN838KGzvSR1"
 
   securitySchemes:
-    oauth2Login:
+    codeLogin:
       type: oauth2
-      description: OAuth2 login
+      description: OAuth2 Authorization Code
+      flows:
+        authorizationCode:
+          authorizationUrl: '/oauth/v2/authorize'
+          tokenUrl: '/oauth/v2/accessToken'
+
+    implicitLogin:
+      type: oauth2
+      description: OAuth2 Implicit
+      flows:
+        implicit:
+          authorizationUrl: '/oauth/v2/authorize'
+          tokenUrl: '/oauth/v2/accessToken'
+
+    passwordLogin:
+      type: oauth2
+      description: OAuth2 Password
       flows:
         password:
+          tokenUrl: '/oauth/v2/accessToken'
+
+    clientLogin:
+      type: oauth2
+      description: OAuth2 Client Credentials
+      flows:
+        clientCredentials:
           tokenUrl: '/oauth/v2/accessToken'
 
     oauth2Bearer:

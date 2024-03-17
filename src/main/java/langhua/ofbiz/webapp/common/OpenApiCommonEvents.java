@@ -32,9 +32,9 @@ import org.apache.ofbiz.entity.util.EntityUtilProperties;
  */
 public class OpenApiCommonEvents {
 
-    public static final String module = OpenApiCommonEvents.class.getName();
+    public static final String MODULE = OpenApiCommonEvents.class.getName();
 
-    private static final String[] ignoreAttrs = new String[] { // Attributes removed for security reason; _ERROR_MESSAGE_ is kept
+    private static final String[] IGNORE_ATTRS = new String[] { // Attributes removed for security reason; _ERROR_MESSAGE_ is kept
         "javax.servlet.request.key_size",
         "_CONTEXT_ROOT_",
         "_FORWARDED_FROM_SERVLET_",
@@ -49,14 +49,17 @@ public class OpenApiCommonEvents {
         "org.apache.tomcat.util.net.secure_protocol_version",
         "userLogin",
         "accessToken",
-        "org.apache.logging.log4j.web.Log4jServletFilter.FILTERED"
+        "org.apache.logging.log4j.web.Log4jServletFilter.FILTERED",
+        "org.apache.tomcat.util.net.secure_requested_protocol_versions",
+        "org.apache.tomcat.util.net.secure_requested_ciphers",
+        "requestMapMap"
     };
 
     public static String jsonResponseFromRequestAttributes(HttpServletRequest request, HttpServletResponse response) {
         // pull out the service response from the request attribute
         Map<String, Object> attrMap = UtilHttp.getJSONAttributeMap(request);
 
-        for (String ignoreAttr : ignoreAttrs) {
+        for (String ignoreAttr : IGNORE_ATTRS) {
             if (attrMap.containsKey(ignoreAttr)) {
                 attrMap.remove(ignoreAttr);
             }
@@ -66,26 +69,35 @@ public class OpenApiCommonEvents {
             try {
                 status = Integer.parseInt(String.valueOf(attrMap.get("status")));
             } catch (NumberFormatException e) {
-                Debug.logError(e, module);
+                Debug.logError(e, MODULE);
             }
         } else if (attrMap.containsKey("_ERROR_MESSAGE_")) {
             String message = (String) attrMap.remove("_ERROR_MESSAGE_");
 
             if (message.startsWith("You do not have permission to invoke the service ")) {
-                status = 403;
+                status = HttpServletResponse.SC_FORBIDDEN;
             } else if (message.startsWith("Equipment is under control of someone else ")) {
-                status = 409;
+                status = HttpServletResponse.SC_CONFLICT;
             } else {
-                status = 400;
+                status = HttpServletResponse.SC_BAD_REQUEST;
             }
             attrMap.put("message", message);
         }
         response.setStatus(status);
+        if (status == HttpServletResponse.SC_UNAUTHORIZED) {
+            response.addHeader("WWW-Authenticate", "SandFlower realm=\"authentication required\"");
+            Debug.logInfo("--------------request headers----------------", MODULE);
+            request.getHeaderNames().asIterator()
+                    .forEachRemaining(header -> Debug.logInfo(header + ": " + request.getHeader(header), MODULE));
+        }
+
+
+
         try {
             JSON json = JSON.from(attrMap);
             writeJSONtoResponse(json, request, response);
         } catch (IOException e) {
-        	Debug.logError(e, module);
+        	Debug.logError(e, MODULE);
             return "error";
         }
         return "success";
@@ -102,7 +114,7 @@ public class OpenApiCommonEvents {
                     + "Normally you simply have to access the data you want, so should not be annoyed by the '//' prefix."
                     + "You might need to remove it if you use Ajax GET responses (not recommended)."
                     + "In case, the util.js scrpt is there to help you."
-                    + "This can be customized in general.properties with the http.json.xssi.prefix property", module);
+                    + "This can be customized in general.properties with the http.json.xssi.prefix property", MODULE);
             Delegator delegator = (Delegator) request.getAttribute("delegator");
             String xssiPrefix =EntityUtilProperties.getPropertyValue("general", "http.json.xssi.prefix", delegator);
             jsonStr = xssiPrefix + jsonStr;
@@ -120,7 +132,7 @@ public class OpenApiCommonEvents {
             out.write(jsonStr);
             out.flush();
         } catch (IOException e) {
-            Debug.logError(e, module);
+            Debug.logError(e, MODULE);
         }
     }
 }

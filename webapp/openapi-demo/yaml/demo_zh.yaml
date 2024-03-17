@@ -35,7 +35,10 @@ tags:
   - name: 演示
     description: 开放接口演示
 security:
-  - oauth2Login: []
+  - codeLogin: []
+  - implicitLogin: []
+  - passwordLogin: []
+  - clientLogin: []
   - oauth2Bearer: []
 paths:
   /testOpenApiDemoService:
@@ -367,11 +370,34 @@ components:
       example: "AT-7--cEerwho2pOGI2Tw2Mm1hN838KGzvSR1"
 
   securitySchemes:
-    oauth2Login:
+    codeLogin:
       type: oauth2
-      description: OAuth2登录
+      description: OAuth2授权码登录
+      flows:
+        authorizationCode:
+          authorizationUrl: '/oauth/v2/authorize'
+          tokenUrl: '/oauth/v2/accessToken'
+
+    implicitLogin:
+      type: oauth2
+      description: OAuth2隐式登录
+      flows:
+        implicit:
+          authorizationUrl: '/oauth/v2/authorize'
+          tokenUrl: '/oauth/v2/accessToken'
+
+    passwordLogin:
+      type: oauth2
+      description: OAuth2密码登录
       flows:
         password:
+          tokenUrl: '/oauth/v2/accessToken'
+
+    clientLogin:
+      type: oauth2
+      description: OAuth2客户端登录
+      flows:
+        clientCredentials:
           tokenUrl: '/oauth/v2/accessToken'
 
     oauth2Bearer:

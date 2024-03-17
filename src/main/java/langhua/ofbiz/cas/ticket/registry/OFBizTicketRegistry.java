@@ -144,14 +144,14 @@ public class OFBizTicketRegistry extends AbstractTicketRegistry {
                 try {
                     ticketValue.store();
                     if (Debug.verboseOn()) {
-                        Debug.logVerbose("Updated ticket [{}].", module, ticket);
+                        Debug.logVerbose("Updated ticket [%s].", module, ticket);
                     }
                 } catch (GenericEntityException e) {
-                    Debug.logError("Failed to update ticket [{}]. " + e.getMessage(), module, ticket);
+                    Debug.logError("Failed to update ticket [%s]. " + e.getMessage(), module, ticket);
                 }
             }
         } catch (GenericEntityException e1) {
-            Debug.logError("Failed to update ticket [{}]. " + e1.getMessage(), module, ticket);
+            Debug.logError("Failed to update ticket [%s]. " + e1.getMessage(), module, ticket);
         }
         return ticket;
     }
@@ -213,9 +213,9 @@ public class OFBizTicketRegistry extends AbstractTicketRegistry {
                     ticketValue.setBytes("expirationPolicy", SerializationUtils.serialize(this.serviceTicketExpirationPolicy));
                 }
                 ticketValue.create();
-                Debug.logInfo("Added ticket [{}] to registry.", module, ticket);
+                Debug.logInfo("Added ticket [%s] to registry.", module, ticket.getId());
             } catch (GenericEntityException e) {
-                Debug.logError("Failed to add ticket [{}]. " + e.getMessage(), module, ticket);
+                Debug.logError("Failed to add ticket [%s]. " + e.getMessage(), module, ticket.getId());
             }
         }
     }
@@ -241,7 +241,7 @@ public class OFBizTicketRegistry extends AbstractTicketRegistry {
                 TransactionUtil.commit(true);
                 try {
                     total1 += delegator.removeAll(tickets.getData());
-                    Debug.logInfo("Total [{}] CasServiceTicket tickets have been removed.", module, total1);
+                    Debug.logInfo("Total [%d] CasServiceTicket tickets have been removed.", module, total1);
                 } catch (GenericEntityException e) {
                     Debug.logError("Failed to remove CasServiceTicket tickets. " + e.getMessage(), module);
                 }
@@ -262,7 +262,7 @@ public class OFBizTicketRegistry extends AbstractTicketRegistry {
                 TransactionUtil.commit(true);
                 try {
                     total2 += delegator.removeAll(tickets.getData());
-                    Debug.logInfo("Total [{}] CasTicketGrantingTicket tickets have been removed.", module, total2);
+                    Debug.logInfo("Total [%d] CasTicketGrantingTicket tickets have been removed.", module, total2);
                 } catch (GenericEntityException e) {
                     Debug.logError("Failed to remove CasTicketGrantingTicket tickets. " + e.getMessage(), module);
                 }
@@ -315,7 +315,7 @@ public class OFBizTicketRegistry extends AbstractTicketRegistry {
                 }
             }
         } catch (final Exception e) {
-            Debug.logError("Error getting ticket [{}] from registry. " + e.getMessage(), module, ticketId);
+            Debug.logError("Error getting ticket [%s] from registry. " + e.getMessage(), module, ticketId);
         }
         return ticket;
     }

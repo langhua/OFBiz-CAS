@@ -379,6 +379,7 @@ public interface OAuth20Constants {
 2. [CAS](https://developers.yale.edu/cas-central-authentication-service)
 3. [Apereo CAS](https://www.apereo.org/projects/cas)
 4. [2024年如何编译cas-5.3.15.1](cas-5.3.15.1-build.md)
+5. [支持Swagger OAuth2认证流程](cas-5.3.15.1-swagger-oauth.md)
 
 <br/><br/>
 

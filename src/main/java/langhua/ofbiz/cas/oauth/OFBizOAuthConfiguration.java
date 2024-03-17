@@ -38,7 +38,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
- * This this OFBizOAuthConfiguration.
+ * This is OFBizOAuthConfiguration.
  */
 @Configuration("ofbizOAuthConfiguration")
 @EnableConfigurationProperties(CasConfigurationProperties.class)

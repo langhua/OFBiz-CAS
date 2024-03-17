@@ -67,7 +67,7 @@ import org.apache.ofbiz.base.util.UtilDateTime;
  */
 public class OAuth2LoginWorker {
 
-    public final static String module = OAuth2LoginWorker.class.getName();
+    public final static String MODULE = OAuth2LoginWorker.class.getName();
 
     private static Gson gson = new Gson();
 
@@ -82,15 +82,12 @@ public class OAuth2LoginWorker {
         String credentials = request.getHeader("Authorization");
         HttpSession session = request.getSession();
         Object oldUserLogin = session.getAttribute("userLogin");
-        if (Debug.verboseOn()) {
-            Debug.logVerbose("oauth2CasCheckLogin credentials:" + credentials, module);
-        }
+        Debug.logInfo("oauth2CasCheckLogin credentials:" + credentials, MODULE);
+
         if (credentials != null) {
             if (credentials.startsWith("Bearer ")) {
                 String accessToken = credentials.replace("Bearer ", "");
-                if (Debug.verboseOn()) {
-                    Debug.logVerbose("Found HTTP Bearer access_token", module);
-                }
+                Debug.logInfo("Found HTTP Bearer access_token", MODULE);
                 Delegator delegator = (Delegator) request.getAttribute("delegator");
                 try {
                     if (accessToken.startsWith(AccessToken.PREFIX)) {
@@ -103,30 +100,34 @@ public class OAuth2LoginWorker {
                                                               .cache(false)
                                                               .queryOne();
                         if (UtilValidate.isNotEmpty(ticketValue)) {
+                            Debug.logInfo("Found service ticket: " + ticketValue, MODULE);
                             AccessTokenImpl at = getAccessToken(delegator, ticketValue);
                             if (!at.isExpired() && at.getAuthentication() != null && at.getAuthentication().getPrincipal() != null) {
                                 String userLoginId = at.getAuthentication().getPrincipal().getId();
+                                Debug.logInfo("Found userLoginId: " + userLoginId, MODULE);
                                 GenericValue userLogin = EntityQuery.use(delegator)
                                                                     .from("UserLogin")
                                                                     .where("userLoginId", userLoginId)
                                                                     .cache(false)
                                                                     .queryOne();
-                                if (UtilValidate.isNotEmpty(userLogin) && "Y".equals(userLogin.getString("enabled")) &&
+                                if (UtilValidate.isNotEmpty(userLogin) &&
+                                        (UtilValidate.isEmpty(userLogin.getString("enabled")) || "Y".equals(userLogin.getString("enabled"))) &&
                                         (userLogin.get("disabledDateTime") == null || UtilDateTime.nowTimestamp().after(userLogin.getTimestamp("disabledDateTime")))) {
+                                    Debug.logInfo("Found UserLogin: " + userLogin, MODULE);
                                     doOAuthLogin(userLogin, request);
                                     request.setAttribute("userLogin", userLogin);
                                 } else {
-                                    response.setStatus(403);
+                                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                                     return "error";
                                 }
                             } else {
-                                response.setStatus(401);
+                                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                                 return "error";
                             }
                         }
                     }
                 } catch (Exception e) {
-                    Debug.logError(e, module);
+                    Debug.logError(e, MODULE);
                 }
             }
         }
@@ -139,13 +140,13 @@ public class OAuth2LoginWorker {
         Object olduserLogin = session.getAttribute("userLogin");
         String credentials = request.getHeader("Authorization");
         if (Debug.verboseOn()) {
-            Debug.logVerbose("oauth2WechatMiniCheckLogin credentials:" + credentials, module);
+            Debug.logVerbose("oauth2WechatMiniCheckLogin credentials:" + credentials, MODULE);
         }
         if (credentials != null) {
             if (credentials.startsWith("Bearer ")) {
                 String accessToken = credentials.replace("Bearer ", "");
                 if (Debug.verboseOn()) {
-                    Debug.logVerbose("Found HTTP Bearer access_token", module);
+                    Debug.logVerbose("Found HTTP Bearer access_token", MODULE);
                 }
                 Delegator delegator = (Delegator) request.getAttribute("delegator");
                 try {
@@ -165,12 +166,12 @@ public class OAuth2LoginWorker {
                                                                    .cache(false)
                                                                    .queryOne();
                         if (!UtilValidate.isNotEmpty(openIdSessionRel)) {
-                            response.sendError(401, "Please login");
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Please login");
                             return "error";
                         }
                         long currentTime = System.currentTimeMillis();
                         if (currentTime > Long.parseLong(openIdSessionRel.get("expiredTime").toString())) {
-                            response.sendError(401, "Token expired, please refresh it");
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token expired, please refresh it");
                             return "error";
                         } else {
                             request.setAttribute("accessToken", openId);
@@ -199,7 +200,7 @@ public class OAuth2LoginWorker {
                         }
                     }
                 } catch (Exception e) {
-                    Debug.logError(e, module);
+                    Debug.logError(e, MODULE);
                 }
             } else if (credentials.startsWith("Bearer-wx-")) {
                 if (olduserLogin == null) {
@@ -207,7 +208,7 @@ public class OAuth2LoginWorker {
                 }
                 String code = credentials.replace("Bearer-wx-", "");
                 if (Debug.verboseOn()) {
-                    Debug.logVerbose("Found HTTP Bearer access_token", module);
+                    Debug.logVerbose("Found HTTP Bearer access_token", MODULE);
                 }
                 Delegator delegator = (Delegator) request.getAttribute("delegator");
                 try {
@@ -216,7 +217,7 @@ public class OAuth2LoginWorker {
                                                                   .where("systemResourceId", "Passport_WechatMini", "systemPropertyId", "appId").cache(false)
                                                                   .queryOne();
                     if (Debug.verboseOn()) {
-                        Debug.logVerbose("appIdSystemProperty:" + appIdSystemProperty, module);
+                        Debug.logVerbose("appIdSystemProperty:" + appIdSystemProperty, MODULE);
                     }
                     String appId = appIdSystemProperty.get("systemPropertyValue").toString();
                     GenericValue appSecretSystemProperty = EntityQuery.use(delegator)
@@ -224,7 +225,7 @@ public class OAuth2LoginWorker {
                                                                       .where("systemResourceId", "Passport_WechatMini", "systemPropertyId", "appSecret").cache(false)
                                                                       .queryOne();
                     if (Debug.verboseOn()) {
-                        Debug.logVerbose("appSecretSystemProperty:" + appSecretSystemProperty, module);
+                        Debug.logVerbose("appSecretSystemProperty:" + appSecretSystemProperty, MODULE);
                     }
                     String appSecret = appSecretSystemProperty.get("systemPropertyValue").toString();
                     String jscode2session = UtilProperties.getPropertyValue("wechatLiteInfo.properties", "wechat.lite.jscode2session");
@@ -234,26 +235,26 @@ public class OAuth2LoginWorker {
                                         "js_code=" + code + "&" +
                                         "grant_type=authorization_code";
                     if (Debug.verboseOn()) {
-                        Debug.logVerbose("oauth2WechatMiniCheckLogin requestUrl:" + requestUrl, module);
+                        Debug.logVerbose("oauth2WechatMiniCheckLogin requestUrl:" + requestUrl, MODULE);
                     }
                     String resultStr = doGet(requestUrl);
                     @SuppressWarnings("unchecked")
                     HashMap<String, String> resultMap = gson.fromJson(resultStr, HashMap.class);
                     if (Debug.verboseOn()) {
-                        Debug.logVerbose("resultMap:" + resultMap, module);
+                        Debug.logVerbose("resultMap:" + resultMap, MODULE);
                     }
                     long expiredTime = System.currentTimeMillis() + 7100 * 1000;
                     if (resultMap.containsKey("errcode")) {
-                        response.sendError(500, "Failed to get wechat mini openId");
+                        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to get wechat mini openId");
                         return "error";
                     } else {
                         String openId = resultMap.get("openid");
                         if (Debug.verboseOn()) {
-                            Debug.logVerbose("openId:" + openId, module);
+                            Debug.logVerbose("openId:" + openId, MODULE);
                         }
                         String sessionKey = resultMap.get("session_key");
                         if (Debug.verboseOn()) {
-                            Debug.logVerbose("sessionKey:" + sessionKey, module);
+                            Debug.logVerbose("sessionKey:" + sessionKey, MODULE);
                         }
                         List<GenericValue> storeList = new ArrayList<GenericValue>();
                         List<EntityExpr> andConditions = UtilMisc.toList(
@@ -266,19 +267,19 @@ public class OAuth2LoginWorker {
                                                                    .cache(false)
                                                                    .queryOne();
                         if (Debug.verboseOn()) {
-                            Debug.logVerbose("openIdSessionRel:" + openIdSessionRel, module);
+                            Debug.logVerbose("openIdSessionRel:" + openIdSessionRel, MODULE);
                         }
                         // if no data found by wechat openId, then insert it, else update
                         if (UtilValidate.isEmpty(openIdSessionRel)) {
                             if (Debug.verboseOn()) {
-                                Debug.logVerbose("===createOpenIdSessionRel===", module);
+                                Debug.logVerbose("===createOpenIdSessionRel===", MODULE);
                             }
                             GenericValue newOpenIdSessionRel = delegator.makeValue("OpenIdSessionRel", UtilMisc.toMap("openId", openId, "transferType",
                                     "wechat", "sessionKey", sessionKey, "transferTime", UtilDateTime.nowTimestamp(), "expiredTime", String.valueOf(expiredTime)));
                             delegator.create(newOpenIdSessionRel);
                         } else {
                             if (Debug.verboseOn()) {
-                                Debug.logVerbose("===updateOpenIdSessionRel===", module);
+                                Debug.logVerbose("===updateOpenIdSessionRel===", MODULE);
                             }
                             openIdSessionRel.set("sessionKey", sessionKey);
                             openIdSessionRel.set("transferTime", UtilDateTime.nowTimestamp());
@@ -310,12 +311,12 @@ public class OAuth2LoginWorker {
                         }
                         doOAuthLogin(userLogin, request);
                         if (Debug.verboseOn()) {
-                            Debug.logVerbose("=====oauth2WechatMiniCheckLogin======request:" + request, module);
+                            Debug.logVerbose("=====oauth2WechatMiniCheckLogin======request:" + request, MODULE);
                         }
                     }
                 } catch (Exception e) {
-                    response.sendError(500, "Failed to get openId");
-                    Debug.logError(e, module);
+                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to get openId");
+                    Debug.logError(e, MODULE);
                     return "error";
                 }
             }
@@ -333,7 +334,7 @@ public class OAuth2LoginWorker {
             if (credentials.startsWith("Bearer ")) {
                 String accessToken = credentials.replace("Bearer ", "");
                 if (Debug.verboseOn()) {
-                    Debug.logVerbose("Found HTTP Bearer access_token", module);
+                    Debug.logVerbose("Found HTTP Bearer access_token", MODULE);
                 }
                 Delegator delegator = (Delegator) request.getAttribute("delegator");
                 try {
@@ -353,12 +354,12 @@ public class OAuth2LoginWorker {
                                                                    .cache(false)
                                                                    .queryOne();
                         if (!UtilValidate.isNotEmpty(openIdSessionRel)) {
-                            response.sendError(401, "Please login");
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Please login");
                             return "error";
                         }
                         long currentTime = System.currentTimeMillis();
                         if (currentTime > Long.parseLong(openIdSessionRel.get("expiredTime").toString())) {
-                            response.sendError(401, "Token expired, please refresh it");
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token expired, please refresh it");
                             return "error";
                         } else {
                             request.setAttribute("accessToken", openId);
@@ -385,13 +386,13 @@ public class OAuth2LoginWorker {
                             doOAuthLogin(userLogin, request);
                             request.setAttribute("userLogin", userLogin);
                             if (Debug.verboseOn()) {
-                                Debug.logVerbose("=====oauth2AlipayMiniCheckLogin======request:" + request, module);
+                                Debug.logVerbose("=====oauth2AlipayMiniCheckLogin======request:" + request, MODULE);
                             }
                         }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    Debug.logError(e, module);
+                    Debug.logError(e, MODULE);
                 }
             } else if (credentials.startsWith("Bearer-Ali-")) {
                 if (olduserLogin == null) {
@@ -399,7 +400,7 @@ public class OAuth2LoginWorker {
                 }
                 String code = credentials.replace("Bearer-Ali-", "");
                 if (Debug.verboseOn()) {
-                    Debug.logVerbose("Found HTTP Bearer access_token", module);
+                    Debug.logVerbose("Found HTTP Bearer access_token", MODULE);
                 }
                 Delegator delegator = (Delegator) request.getAttribute("delegator");
                 try {
@@ -429,16 +430,16 @@ public class OAuth2LoginWorker {
 
                     if (asotrResponse.isSuccess()) {
                         if (Debug.verboseOn()) {
-                            Debug.logVerbose("Alipay token request success", module);
-                            Debug.logVerbose(gson.toJson(asotrResponse), module);
+                            Debug.logVerbose("Alipay token request success", MODULE);
+                            Debug.logVerbose(gson.toJson(asotrResponse), MODULE);
                         }
                         String openId = asotrResponse.getUserId();
                         if (Debug.verboseOn()) {
-                            Debug.logVerbose("openId:" + openId, module);
+                            Debug.logVerbose("openId:" + openId, MODULE);
                         }
                         String sessionKey = asotrResponse.getAccessToken();
                         if (Debug.verboseOn()) {
-                            Debug.logVerbose("sessionKey:" + sessionKey, module);
+                            Debug.logVerbose("sessionKey:" + sessionKey, MODULE);
                         }
                         String refreshToken = asotrResponse.getRefreshToken();
 
@@ -454,19 +455,19 @@ public class OAuth2LoginWorker {
                                                                    .cache(false)
                                                                    .queryOne();
                         if (Debug.verboseOn()) {
-                            Debug.logVerbose("openIdSessionRel:" + openIdSessionRel, module);
+                            Debug.logVerbose("openIdSessionRel:" + openIdSessionRel, MODULE);
                         }
                         // if no data found by alipay openId, then insert it, else update
                         if (UtilValidate.isEmpty(openIdSessionRel)) {
                             if (Debug.verboseOn()) {
-                                Debug.logVerbose("===createOpenIdSessionRel===", module);
+                                Debug.logVerbose("===createOpenIdSessionRel===", MODULE);
                             }
                             GenericValue newOpenIdSessionRel = delegator.makeValue("OpenIdSessionRel", UtilMisc.toMap("openId", openId, "transferType",
                                     "alipay", "sessionKey", sessionKey, "refreshToken", refreshToken, "transferTime", UtilDateTime.nowTimestamp(), "expiredTime", String.valueOf(expiredTime)));
                             delegator.create(newOpenIdSessionRel);
                         } else {
                             if (Debug.verboseOn()) {
-                                Debug.logVerbose("===updateOpenIdSessionRel===", module);
+                                Debug.logVerbose("===updateOpenIdSessionRel===", MODULE);
                             }
                             openIdSessionRel.set("sessionKey", sessionKey);
                             openIdSessionRel.set("refreshToken", refreshToken);
@@ -500,15 +501,15 @@ public class OAuth2LoginWorker {
                         doOAuthLogin(userLogin, request);
                     } else {
                         if (Debug.verboseOn()) {
-                            Debug.logVerbose("Failed to request Alipay token", module);
-                            Debug.logVerbose(gson.toJson(asotrResponse), module);
+                            Debug.logVerbose("Failed to request Alipay token", MODULE);
+                            Debug.logVerbose(gson.toJson(asotrResponse), MODULE);
                         }
-                        response.sendError(500, "Failed to get alipay openId");
+                        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to get alipay openId");
                         return "error";
                     }
                 } catch (Exception e) {
-                    response.sendError(500, "Failed to get alipay openId");
-                    Debug.logError(e, module);
+                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to get alipay openId");
+                    Debug.logError(e, MODULE);
                     return "error";
                 }
             }
@@ -575,10 +576,11 @@ public class OAuth2LoginWorker {
                     .cache(false)
                     .queryOne();
         } catch (GenericEntityException e) {
-            Debug.logError(e, module);
+            Debug.logError(e, MODULE);
         }
         TicketGrantingTicketImpl tgt = null;
         if (UtilValidate.isNotEmpty(tgtValue)) {
+            Debug.logInfo("Found TGT value: " + tgtValue, MODULE);
             if (tgtValue.get("authentication") != null) {
                 authentication = SerializationUtils.deserialize(tgtValue.getBytes("authentication"), Authentication.class);
             }
@@ -605,7 +607,7 @@ public class OAuth2LoginWorker {
                 if (person != null) session.setAttribute("person", person);
                 if (partyGroup != null) session.setAttribute("partyGroup", partyGroup);
             } catch (GenericEntityException e) {
-                Debug.logError(e, "Error getting person/partyGroup info for session, ignoring...", module);
+                Debug.logError(e, "Error getting person/partyGroup info for session, ignoring...", MODULE);
             }
         }
 

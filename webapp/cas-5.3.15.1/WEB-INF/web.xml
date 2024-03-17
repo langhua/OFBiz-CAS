@@ -23,15 +23,13 @@ under the License.
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
     <display-name>OFBiz-CAS</display-name>
-<!--    <servlet>-->
-<!--        <servlet-name>dispatcher</servlet-name>-->
-<!--        <servlet-class>-->
-<!--            org.springframework.web.servlet.DispatcherServlet-->
-<!--        </servlet-class>-->
-<!--    </servlet>-->
-
-<!--    <servlet-mapping>-->
-<!--        <servlet-name>dispatcher</servlet-name>-->
-<!--        <url-pattern>/</url-pattern>-->
-<!--    </servlet-mapping>-->
+    <filter>
+        <display-name>BridgeFilter</display-name>
+        <filter-name>BridgeFilter</filter-name>
+        <filter-class>langhua.ofbiz.webapp.control.CasSwaggerUiBridgeFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>BridgeFilter</filter-name>
+        <url-pattern>/v2/accessToken</url-pattern>
+    </filter-mapping>
 </web-app>

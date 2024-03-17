@@ -78,7 +78,7 @@ public class OFBizServiceRegistry extends AbstractServiceRegistry {
                 registeredServiceValue.remove();
             }
         } catch (GenericEntityException e) {
-            Debug.logError("Error while deleting a registered service[id:{}/name:{}].", module,
+            Debug.logError("Error while deleting a registered service[id:%s/name:%s].", module,
                            registeredService.getId(), registeredService.getName(), e);
             return false;
         }
@@ -190,7 +190,7 @@ public class OFBizServiceRegistry extends AbstractServiceRegistry {
                 registeredService = getRegisteredService(registeredServiceValue);
             }
         } catch (GenericEntityException e) {
-            Debug.logError("Error while finding a registered service[{}]. " + e.getMessage(), module, id);
+            Debug.logError("Error while finding a registered service[%s]. " + e.getMessage(), module, id);
         }
         return registeredService;
     }

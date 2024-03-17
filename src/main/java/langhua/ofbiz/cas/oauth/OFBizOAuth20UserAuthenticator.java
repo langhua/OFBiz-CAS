@@ -63,7 +63,7 @@ public final class OFBizOAuth20UserAuthenticator implements Authenticator<Userna
             try {
     			Map<String, Object> results = this.dispatcher.runSync("userLogin", UtilMisc.toMap("login.username", username, "login.password", rawPassword));
     			if (!ServiceUtil.isSuccess(results)) {
-    				Debug.logInfo("{} failed to login OFBiz.", module, username);
+    				Debug.logInfo("%s failed to login OFBiz.", module, username);
     				// this is to disable browser pop username/password dialog to the users
     				context.setResponseHeader("WWW-Authenticate", "SandFlower realm=\"authentication required\"");
     				throw new GeneralSecurityException(ServiceUtil.getErrorMessage(results), new FailedLoginException());

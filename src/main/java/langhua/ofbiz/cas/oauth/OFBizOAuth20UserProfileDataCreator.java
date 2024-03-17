@@ -72,7 +72,7 @@ public class OFBizOAuth20UserProfileDataCreator implements OAuth20UserProfileDat
             resourceResolverName = "OAUTH2_USER_PROFILE_DATA_RESOURCE_RESOLVER")
     public Map<String, Object> createFrom(final AccessToken accessToken, final J2EContext context) {
         Principal principal = accessToken.getAuthentication().getPrincipal();
-        Debug.logInfo("Preparing user profile response based on CAS principal [{}]", module, principal);
+        Debug.logInfo("Preparing user profile response based on CAS principal [%s]", module, principal);
 
         final Map<String, Object> map = new HashMap<>();
         if (principal != null && UtilValidate.isNotEmpty(principal.getId())) {

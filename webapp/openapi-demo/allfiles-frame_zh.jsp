@@ -1,12 +1,10 @@
-<%@ page pageEncoding="utf-8" %>
-<%
-    String swaggerEditor = "swagger-editor-3.11.7";
-    String swaggerUI = "swagger-ui-3.28.0";
+<%@ page pageEncoding="utf-8" %><%
+    String swaggerUI = "swagger-ui-dist";
 %>
 <html xmlns:lxslt="http://xml.apache.org/xslt">
 <head>
     <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <link rel="stylesheet" type="text/css" href="/openapi-demo/<%= swaggerUI %>/dist/swagger-ui.css">
+    <link rel="stylesheet" type="text/css" href="/openapi-demo/<%= swaggerUI %>/swagger-ui.css">
     <style>
       body
       {
@@ -47,19 +45,13 @@
 <table width="100%">
     <tr>
         <td nowrap><a target="fileFrame" class="demo-title"
-                      href="/openapi-demo/<%= swaggerUI %>/dist/index.html?url=/openapi-demo/yaml/oauth2_zh.yaml">OAuth2开放接口</a>&nbsp;&nbsp;<a
-                target="fileFrame"
-                href="/openapi-demo/<%= swaggerEditor %>/index.html?url=/openapi-demo/yaml/oauth2_zh.yaml">
-            <image style="" src="/openapi-demo/images/edit_20x20.png"/>
-        </a></td>
+                      href="/openapi-demo/<%= swaggerUI %>/?url=/openapi-demo/yaml/oauth2_zh.yaml">OAuth2开放接口</a>
+        </td>
     </tr>
     <tr>
         <td nowrap><a target="fileFrame" class="demo-title"
-                      href="/openapi-demo/<%= swaggerUI %>/dist/index.html?url=/openapi-demo/yaml/demo_zh.yaml">开放接口演示</a>&nbsp;&nbsp;<a
-                target="fileFrame"
-                href="/openapi-demo/<%= swaggerEditor %>/index.html?url=/openapi-demo/yaml/demo_zh.yaml">
-            <image style="" src="/openapi-demo/images/edit_20x20.png"/>
-        </a></td>
+                      href="/openapi-demo/<%= swaggerUI %>/?url=/openapi-demo/yaml/demo_zh.yaml">开放接口演示</a>
+        </td>
     </tr>
 </table>
 </p>

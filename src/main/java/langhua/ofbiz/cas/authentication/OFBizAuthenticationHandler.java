@@ -63,7 +63,7 @@ public class OFBizAuthenticationHandler extends AbstractUsernamePasswordAuthenti
         try {
 			Map<String, Object> results = this.dispatcher.runSync("userLogin", UtilMisc.toMap("login.username", username, "login.password", rawPassword));
 			if (!ServiceUtil.isSuccess(results)) {
-				Debug.logInfo("{} failed to login OFBiz.", module, username);
+				Debug.logInfo("%s failed to login OFBiz.", module, username);
 				throw new GeneralSecurityException(ServiceUtil.getErrorMessage(results), new FailedLoginException());
 			}
 		} catch (GenericServiceException e) {

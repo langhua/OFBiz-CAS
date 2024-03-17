@@ -58,28 +58,28 @@ paths:
           required: true
           schema:
             type: string
-          example: clientId
+          example: SandFlower
         - in: query
           name: client_secret
           description: 应用程序密码。当有这个参数时，username和password参数将被忽略。
           required: false
           schema:
             type: string
-          example: clientSecret
+          example: sandflower
         - in: query
           name: username
           description: 用户名
           required: false
           schema:
             type: string
-          example: demo
+          example: admin
         - in: query
           name: password
           description: 密码
           required: false
           schema:
             type: string
-          example: 123456
+          example: ofbiz
       responses:
         200:
           description: 认证成功。
