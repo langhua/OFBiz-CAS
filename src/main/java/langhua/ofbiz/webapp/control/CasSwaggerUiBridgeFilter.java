@@ -1,9 +1,25 @@
+/*******************************************************************************
+ * Copyright 2018 Langhua Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
 package langhua.ofbiz.webapp.control;
 
 import org.apache.catalina.connector.RequestFacade;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.ofbiz.base.util.Debug;
 import org.apache.ofbiz.base.util.StringUtil;
-import org.apache.tomcat.util.http.MimeHeaders;
 import org.apache.tomcat.util.http.Parameters;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -20,52 +36,52 @@ import java.util.List;
 public class CasSwaggerUiBridgeFilter extends OncePerRequestFilter {
 
     private static final String MODULE = CasSwaggerUiBridgeFilter.class.getName();
+    private static final Logger logger = LogManager.getLogger();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         Debug.logInfo("==== Request URI: " + request.getRequestURI(), MODULE);
+        logger.debug("  ------------headers----------------");
+        request.getHeaderNames().asIterator().forEachRemaining(headerName ->
+                logger.debug("  - " + headerName + ": " + request.getHeader(headerName)));
+        logger.debug("  ------------parameters----------------");
+        request.getParameterNames().asIterator().forEachRemaining(paramter ->
+                logger.debug("  - " + paramter + ": " + request.getParameter(paramter)));
+
         String authHeader = request.getHeader("authorization");
         String grantType = request.getParameter("grant_type");
 
-        if (authHeader != null) {
+        if (authHeader != null && ("password".equals(grantType) || "client_credentials".equals(grantType))) {
             try {
-                RequestFacade requestFacade = (RequestFacade) request;
-                Field declaredField = requestFacade.getClass().getDeclaredField("request");
-                declaredField.setAccessible(true);
+                authHeader = authHeader.replaceFirst("^Basic ", "");
+                authHeader = new String(Base64.getDecoder().decode(authHeader), StandardCharsets.UTF_8);
+                List<String> splits = StringUtil.split(authHeader, ":");
+                logger.debug("  - authorization: " + splits);
 
-                Object requestObject = declaredField.get(request);
-                Field coyoteRequest = requestObject.getClass().getDeclaredField("coyoteRequest");
-                coyoteRequest.setAccessible(true);
+                if (splits.size() > 0) {
+                    String clientId = splits.get(0);
+                    if (clientId != null && clientId.length() > 0) {
+                        RequestFacade requestFacade = (RequestFacade) request;
+                        Field declaredField = requestFacade.getClass().getDeclaredField("request");
+                        declaredField.setAccessible(true);
 
-                Object cro = coyoteRequest.get(requestObject);
-                Field headers = cro.getClass().getDeclaredField("headers");
-                headers.setAccessible(true);
+                        Object requestObject = declaredField.get(request);
+                        Field coyoteRequest = requestObject.getClass().getDeclaredField("coyoteRequest");
+                        coyoteRequest.setAccessible(true);
 
-                MimeHeaders mh = (MimeHeaders) headers.get(cro);
-                Debug.logInfo("  - remove [authorization] header with \"" + authHeader + "\"", MODULE);
-                mh.removeHeader("authorization");
-                Debug.logInfo("  - set [Authorization] header with \"" + authHeader + "\"", MODULE);
-                mh.addValue("Authorization").setString(authHeader);
+                        Object cro = coyoteRequest.get(requestObject);
+                        Field parametersField = cro.getClass().getDeclaredField("parameters");
+                        parametersField.setAccessible(true);
 
-                if (grantType.equals("password")) {
-                    authHeader = authHeader.replaceFirst("^Basic ", "");
-                    authHeader = new String(Base64.getDecoder().decode(authHeader), StandardCharsets.UTF_8);
-                    List<String> splits = StringUtil.split(authHeader, ":");
-                    Debug.logInfo("  - authorization: " + splits, MODULE);
-                    if (splits.size() > 0) {
-                        String clientId = splits.get(0);
-                        if (clientId != null && clientId.length() > 0) {
-                            Field parametersField = cro.getClass().getDeclaredField("parameters");
-                            parametersField.setAccessible(true);
-                            Parameters parameters = (Parameters) parametersField.get(cro);
-                            parameters.addParameter("client_id", clientId);
-                            Debug.logInfo("  - add parameter client_id=" + clientId, MODULE);
-                            if (splits.size() > 1) {
-                                String clientSecret = splits.get(1);
-                                if (clientSecret != null && clientSecret.length() > 0) {
-                                    parameters.addParameter("client_secret", clientSecret);
-                                    Debug.logInfo("  - add parameter client_secret=" + clientSecret, MODULE);
-                                }
+                        Parameters parameters = (Parameters) parametersField.get(cro);
+                        parameters.addParameter("client_id", clientId);
+                        logger.debug("  - add parameter client_id=" + clientId);
+
+                        if (splits.size() > 1) {
+                            String clientSecret = splits.get(1);
+                            if (clientSecret != null && clientSecret.length() > 0) {
+                                parameters.addParameter("client_secret", clientSecret);
+                                logger.debug("  - add parameter client_secret=" + clientSecret);
                             }
                         }
                     }
@@ -77,6 +93,9 @@ public class CasSwaggerUiBridgeFilter extends OncePerRequestFilter {
 
         Oauth2ResponseWrapper responseWrapper = new Oauth2ResponseWrapper(response);
         filterChain.doFilter(request, responseWrapper);
+        logger.debug("  ------------response----------------");
+        logger.debug("  - status: " + responseWrapper.getStatus());
+
         if (responseWrapper.getStatus() == HttpServletResponse.SC_UNAUTHORIZED) {
             responseWrapper.setHeader("WWW-Authenticate", "SandFlower realm=\"authentication required\"");
         }
