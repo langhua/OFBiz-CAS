@@ -96,6 +96,7 @@ public class CasSwaggerUiBridgeFilter extends OncePerRequestFilter {
         logger.debug("  ------------response----------------");
         logger.debug("  - status: " + responseWrapper.getStatus());
 
+        responseWrapper.setHeader("Access-Control-Allow-Origin", "*");
         if (responseWrapper.getStatus() == HttpServletResponse.SC_UNAUTHORIZED) {
             responseWrapper.setHeader("WWW-Authenticate", "SandFlower realm=\"authentication required\"");
         }

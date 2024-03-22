@@ -346,6 +346,7 @@ components:
         authorizationCode:
           authorizationUrl: '/oauth/v2/authorize'
           tokenUrl: '/oauth/v2/accessToken'
+          refreshUrl: '/oauth/v2/accessToken'
 
     implicitLogin:
       type: oauth2
@@ -353,7 +354,7 @@ components:
       flows:
         implicit:
           authorizationUrl: '/oauth/v2/authorize'
-          tokenUrl: '/oauth/v2/accessToken'
+          refreshUrl: '/oauth/v2/accessToken'
 
     passwordLogin:
       type: oauth2
@@ -361,6 +362,7 @@ components:
       flows:
         password:
           tokenUrl: '/oauth/v2/accessToken'
+          refreshUrl: '/oauth/v2/accessToken'
 
     clientLogin:
       type: oauth2
@@ -368,6 +370,7 @@ components:
       flows:
         clientCredentials:
           tokenUrl: '/oauth/v2/accessToken'
+          refreshUrl: '/oauth/v2/accessToken'
 
     oauth2Bearer:
       type: http

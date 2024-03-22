@@ -17,11 +17,14 @@ function removeCookies() {
 }
 
 window.onload = function() {
-  //<editor-fold desc="Changeable Configuration Block">
-
-  // the following lines will be replaced by docker/configurator, when it runs in a docker-container
   window.ui = SwaggerUIBundle({
-    url: urlParam ? urlParam : "https://petstore.swagger.io/v2/swagger.json",
+    // url: urlParam ? urlParam : "https://petstore.swagger.io/v2/swagger.json",
+    urls: [
+      {name: 'OAuth2 APIs', url: '/openapi-demo/yaml/oauth2.yaml'},
+      {name: 'OAuth2开放接口', url: '/openapi-demo/yaml/oauth2_zh.yaml'},
+      {name: 'OpenAPI demo', url: '/openapi-demo/yaml/demo.yaml'},
+      {name: '开放接口演示', url: '/openapi-demo/yaml/demo_zh.yaml'},
+    ],
     dom_id: '#swagger-ui',
     deepLinking: true,
     presets: [
@@ -35,20 +38,26 @@ window.onload = function() {
           statePlugins: {
             auth: {
               wrapActions: {
-                logout: (oriAction) => (keys) => {
-                  // logout oauth
-                  console.log("Logout from following securities:", keys[0])
-                  if (keys[0] == 'passwordLogin') {
-                    console.log("Logout from passwordLogin");
-                  }
-                  fetch('https://localhost:8443/oauth/logout', {
-                     headers: {
-                        'Accept': 'application/json'
-                     }
-                  })
+                logout: (oriAction, system) => (payload) => {
+//                  const configs = system.getConfigs()
+//                  const authorized = system.authSelectors.authorized()
+//
+//                  // code
+//                  if (Array.isArray(payload)) {
+//                    payload.forEach((authorizedName) => {
+//                      console.log("authorizedName: ", authorizedName)
+//                      if (authorizedName === 'codeLogin') {
+//                        const auth = authorized.get(authorizedName, {})
+//                        const code = auth.getIn(["code"])
+//                        console.log("code: ", code)
+//                      }
+//                    })
+//                  }
+
+                  fetch('https://localhost:8443/oauth/logout')
                   // remove cookies
-                  removeCookies();
-                  return oriAction(keys) // don't forget! otherwise, Swagger UI won't logout
+                  removeCookies()
+                  return oriAction(payload); // don't forget! otherwise, Swagger UI won't logout
                 }
               }
             }
@@ -59,5 +68,9 @@ window.onload = function() {
     layout: "StandaloneLayout"
   });
 
-  //</editor-fold>
+  window.ui.initOAuth({
+    clientId: 'SandFlower',
+    clientSecret: 'sandflower',
+    // usePkceWithAuthorizationCodeGrant: 'false'
+  });
 };
