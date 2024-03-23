@@ -35,7 +35,8 @@ window.onload = function() {
                   return oriAction(payload)
                 },
                 logout: (oriAction, system) => (payload) => {
-                  fetch('https://localhost:8443/oauth/logout')
+                  // external logout
+                  fetch(window.location.origin + '/oauth/logout')
                   removeCookies()
                   return oriAction(payload)
                 }
@@ -49,7 +50,7 @@ window.onload = function() {
   });
 
   window.ui.initOAuth({
-    appName: 'OFBiz CAS',
+    appName: 'OFBiz CAS OAuth2',
     clientId: 'SandFlower',
     clientSecret: 'sandflower',
   });
