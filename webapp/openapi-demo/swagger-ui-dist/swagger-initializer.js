@@ -1,10 +1,3 @@
-const queryString = window.location.search;
-console.log(queryString);
-const params = new URLSearchParams(queryString);
-console.log(params);
-const urlParam = params.get('url');
-console.log(urlParam);
-
 function removeCookies() {
     var cookies = document.cookie.split(";");
     for (var i = 0; i < cookies.length; i++) {
@@ -18,7 +11,6 @@ function removeCookies() {
 
 window.onload = function() {
   window.ui = SwaggerUIBundle({
-    // url: urlParam ? urlParam : "https://petstore.swagger.io/v2/swagger.json",
     urls: [
       {name: 'OAuth2 APIs', url: '/openapi-demo/yaml/oauth2.yaml'},
       {name: 'OAuth2开放接口', url: '/openapi-demo/yaml/oauth2_zh.yaml'},
@@ -38,26 +30,14 @@ window.onload = function() {
           statePlugins: {
             auth: {
               wrapActions: {
+                authorizeOauth2: (oriAction, system) => (payload) => {
+                  payload.auth.code = ""
+                  return oriAction(payload)
+                },
                 logout: (oriAction, system) => (payload) => {
-//                  const configs = system.getConfigs()
-//                  const authorized = system.authSelectors.authorized()
-//
-//                  // code
-//                  if (Array.isArray(payload)) {
-//                    payload.forEach((authorizedName) => {
-//                      console.log("authorizedName: ", authorizedName)
-//                      if (authorizedName === 'codeLogin') {
-//                        const auth = authorized.get(authorizedName, {})
-//                        const code = auth.getIn(["code"])
-//                        console.log("code: ", code)
-//                      }
-//                    })
-//                  }
-
                   fetch('https://localhost:8443/oauth/logout')
-                  // remove cookies
                   removeCookies()
-                  return oriAction(payload); // don't forget! otherwise, Swagger UI won't logout
+                  return oriAction(payload)
                 }
               }
             }
@@ -65,12 +45,12 @@ window.onload = function() {
         }
       }
     ],
-    layout: "StandaloneLayout"
+    layout: "StandaloneLayout",
   });
 
   window.ui.initOAuth({
+    appName: 'OFBiz CAS',
     clientId: 'SandFlower',
     clientSecret: 'sandflower',
-    // usePkceWithAuthorizationCodeGrant: 'false'
   });
 };
