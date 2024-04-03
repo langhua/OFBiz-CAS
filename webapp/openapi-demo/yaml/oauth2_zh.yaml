@@ -65,7 +65,6 @@ paths:
           required: false
           schema:
             type: string
-          example: sandflower
         - in: query
           name: username
           description: 用户名

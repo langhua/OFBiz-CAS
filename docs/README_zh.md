@@ -8,6 +8,7 @@ OFBiz-CAS模块令OFBiz提供OAuth 2.0认证服务。
 - JDK 17
 - OFBiz 22.01
 - CAS 5.3.15.1
+- Swagger UI 5.12.0 (webapp/openapi-demo/swagger-ui-dist)
 
 <br/>
 
@@ -379,7 +380,7 @@ public interface OAuth20Constants {
 2. [CAS](https://developers.yale.edu/cas-central-authentication-service)
 3. [Apereo CAS](https://www.apereo.org/projects/cas)
 4. [2024年如何编译cas-5.3.15.1](cas-5.3.15.1-build.md)
-5. [支持Swagger OAuth2认证流程](cas-5.3.15.1-swagger-oauth.md)
+5. [支持Swagger OAuth2认证流程](cas-5.3.15.1-swagger-oauth-zh.md)
 
 <br/><br/>
 

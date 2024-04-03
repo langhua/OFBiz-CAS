@@ -355,6 +355,9 @@ components:
         implicit:
           authorizationUrl: '/oauth/v2/authorize'
           refreshUrl: '/oauth/v2/accessToken'
+          scopes:
+            'write:pets': modify pets in your account
+            'read:pets': read your pets
 
     passwordLogin:
       type: oauth2
