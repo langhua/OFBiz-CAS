@@ -7,7 +7,7 @@
   "name" : "OFBiz OAuth2",
   "id" : 10000002,
   "logo": "https://ofbiz.apache.org/images/ofbiz_logo.png",
-  "evaluationOrder": 10,
+  "evaluationOrder": 20,
   "jsonFormat": true,
   "supportedGrantTypes": [ "java.util.HashSet", [ "AUTHORIZATION_CODE", "PASSWORD", 
                                                   "CLIENT_CREDENTIALS", "REFRESH_TOKEN" ] ],
